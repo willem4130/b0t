@@ -1,12 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Disable static optimization to avoid build errors with error pages
-  experimental: {
-    staticGenerationRetryCount: 0,
-  },
-  // Skip build-time static generation for error pages
-  skipTrailingSlashRedirect: true,
+  // Force dynamic rendering for all pages to avoid static generation errors
+  output: 'standalone',
 };
 
 export default nextConfig;
