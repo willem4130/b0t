@@ -13,6 +13,6 @@ export default {
         url: 'local.db',
       }
     : {
-        url: databaseUrl,
+        url: databaseUrl!,
       },
 } satisfies Config;
