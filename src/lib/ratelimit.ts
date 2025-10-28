@@ -10,9 +10,12 @@ import { logger } from './logger';
  * For development: Uses in-memory cache (ephemeral)
  */
 
-// Check if Upstash Redis is configured
+// Check if Upstash Redis is configured with valid URLs
 const hasUpstashConfig =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+  process.env.UPSTASH_REDIS_REST_URL &&
+  process.env.UPSTASH_REDIS_REST_TOKEN &&
+  process.env.UPSTASH_REDIS_REST_URL.startsWith('https://') &&
+  !process.env.UPSTASH_REDIS_REST_URL.includes('your_upstash');
 
 // Create rate limiter (10 requests per 10 seconds)
 type RatelimitConfig = ConstructorParameters<typeof Ratelimit>[0];
