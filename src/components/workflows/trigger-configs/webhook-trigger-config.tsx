@@ -89,14 +89,14 @@ export function WebhookTriggerConfig({
   };
 
   return (
-    <div className="space-y-4 py-4">
+    <div className="space-y-4">
       <div className="space-y-2">
         <Label>Webhook URL</Label>
         <div className="flex gap-2 min-w-0">
           <Input
             value={webhookUrl}
             readOnly
-            className="font-mono text-xs flex-1 min-w-0"
+            className="font-mono text-xs flex-1 min-w-0 overflow-x-auto"
           />
           <Button
             variant="outline"
@@ -200,7 +200,7 @@ export function WebhookTriggerConfig({
 
       <div className="rounded-lg border border-border/50 bg-muted/50 p-3 space-y-2">
         <h4 className="text-sm font-medium">Example cURL Command</h4>
-        <pre className="text-xs bg-black/5 dark:bg-white/5 p-2 rounded overflow-x-auto">
+        <pre className="text-xs bg-black/5 dark:bg-white/5 p-2 rounded overflow-x-auto whitespace-pre-wrap break-all">
           {`curl -X POST "${webhookUrl}" \\
   -H "Content-Type: application/json" \\
   -d '${testPayload.replace(/\n\s*/g, ' ')}'`}

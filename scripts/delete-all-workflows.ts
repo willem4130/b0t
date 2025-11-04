@@ -1,17 +1,26 @@
-import { db } from '../src/lib/db';
-import { workflowsTable } from '../src/lib/schema';
+import { useSQLite, sqliteDb, postgresDb } from '../src/lib/db';
+import { workflowsTableSQLite, workflowsTablePostgres } from '../src/lib/schema';
 
 async function deleteAllWorkflows() {
-  if (!db) {
-    console.error('Database not initialized');
-    process.exit(1);
-  }
-
   console.log('🗑️  Deleting all workflows...');
 
-  // Delete all workflows - use type assertion to work around union type issue in scripts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (db as any).delete(workflowsTable);
+  if (useSQLite) {
+    if (!sqliteDb) {
+      console.error('SQLite database not initialized');
+      process.exit(1);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (sqliteDb as any).delete(workflowsTableSQLite);
+  } else {
+    if (!postgresDb) {
+      console.error('PostgreSQL database not initialized');
+      process.exit(1);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (postgresDb as any).delete(workflowsTablePostgres);
+  }
 
   console.log('✅ All workflows deleted');
   process.exit(0);
