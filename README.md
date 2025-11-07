@@ -2,7 +2,7 @@
 
 **Workflow automation, but you just describe what you want and it happens.**
 
-No drag-and-drop builders. No wiring nodes together. No watching tutorial videos to figure out where the "Add Filter" button is. Just chat with AI, and boom—your automation is running.
+No drag-and-drop builders. No wiring nodes together. No watching tutorial videos to figure out where the "Add Filter" button is. Just describe what you want to Claude Code, and your automation is running.
 
 **Open source. Free. Self-hostable. No vendor lock-in.**
 
@@ -36,13 +36,13 @@ If you've used Zapier, n8n, or Make.com, you know the pain:
 
 **The Make problem:** The visual editor is pretty, but you're still manually wiring things together. And good luck explaining your workflow to someone else when it looks like a bowl of spaghetti.
 
-**b0t's approach:** Chat interface. That's it. The AI figures out the technical details. You get n8n's power with Zapier's ease of use, minus the part where either company holds your wallet hostage. And it's completely free and open source—run it on your own hardware for the cost of a $5/month VPS.
+**b0t's approach:** Conversation with Claude Code. That's it. Claude figures out the technical details. You get n8n's power with Zapier's ease of use, minus the part where either company holds your wallet hostage. And it's completely free and open source (run it on your own hardware for the cost of a $5/month VPS).
 
 ---
 
 ## Okay, but how does it actually work?
 
-You describe what you want in plain English. The AI (Claude) reads through 900+ available functions across 140 modules, generates a workflow JSON, validates it, and saves it to your dashboard.
+You describe what you want to Claude Code in plain English. Claude reads through 900+ available functions across 140 modules, generates a workflow JSON, validates it, and saves it to your dashboard.
 
 Then you can:
 - Run it manually (click a button)
@@ -51,12 +51,12 @@ Then you can:
 - Connect it to a Telegram/Discord bot (because why not)
 - Have it respond to chat messages (conversational automations)
 
-**Example workflow created via chat:**
+**Example workflow created via Claude Code:**
 
 ```
 User: "I want to monitor GitHub trending repos and post the top JavaScript ones to Slack daily"
 
-AI generates this behind the scenes:
+Claude Code generates this behind the scenes:
 1. Fetch trending repos from GitHub
 2. Filter by language = JavaScript
 3. Rank by stars
@@ -68,38 +68,38 @@ AI generates this behind the scenes:
 
 **You see:** "Workflow created! Want to test it now?"
 
-**What you don't see:** The AI choosing the right modules, mapping data between steps, setting up rate limiting, adding error handling, configuring the cron schedule.
+**What you don't see:** Claude Code choosing the right modules, mapping data between steps, setting up rate limiting, adding error handling, and configuring the cron schedule.
 
 ---
 
 ## Features (the stuff that actually matters)
 
-### Chat-Based Creation
-Describe your automation in natural language. The AI handles module discovery, parameter mapping, error handling, scheduling—all of it. You review and approve.
+### Claude Code Integration
+Describe your automation to Claude Code in natural language. Claude handles module discovery, parameter mapping, error handling, and scheduling. You review and approve.
 
 ### 900+ Functions Across 140 Modules
 Not "integrations with apps." Actual functions you can compose:
 
 - **Communication:** Slack, Discord, Telegram, Email, WhatsApp, Twilio, Intercom, Zendesk
 - **Social Media:** Twitter, YouTube, Reddit, Instagram, GitHub, TikTok
-- **AI:** OpenAI (GPT-4), Anthropic (Claude), Cohere, HuggingFace, vector databases
+- **AI:** OpenAI, Anthropic Claude, Cohere, HuggingFace, vector databases
 - **Data:** PostgreSQL, MongoDB, MySQL, Google Sheets, Airtable, Notion
 - **E-commerce:** Shopify, WooCommerce, Amazon Seller Partner, Etsy, eBay, Square
 - **Business Tools:** Salesforce, HubSpot, QuickBooks, Stripe, DocuSign
 - **Developer Tools:** GitHub Actions, Vercel, Netlify, Sentry, Datadog
 - **Video/Audio:** ElevenLabs, HeyGen, Runway, Synthesia, Cloudinary, Vimeo
 - **Lead Generation:** Apollo, Clearbit, Hunter, ZoomInfo
-- **Utilities:** HTTP, web scraping, RSS, CSV, JSON transforms, image processing, PDF generation, encryption, compression, date/time, validation, scoring, batching... (250+ utility functions)
+- **Utilities:** HTTP, web scraping, RSS, CSV, JSON transforms, image processing, PDF generation, encryption, compression, date/time, validation, scoring, batching (250+ utility functions)
 
-And here's the kicker: if we don't have a specific integration, you can use the HTTP module to call any API. The AI knows how to do it.
+And here's the kicker: if we don't have a specific integration, you can use the HTTP module to call any API. Claude Code knows how to do it.
 
 ### Production-Ready (Not a Toy)
 Every module includes:
-- **Circuit breakers** - APIs go down. We handle it gracefully.
-- **Rate limiting** - Respect API limits automatically (Twitter: 300/15min, OpenAI: 500/min, etc.)
-- **Automatic retries** - Transient failures get 3 attempts with exponential backoff.
-- **Structured logging** - Know exactly what happened and when.
-- **Encryption** - All API keys/tokens encrypted with AES-256.
+- **Circuit breakers** (APIs go down, we handle it gracefully)
+- **Rate limiting** (respect API limits automatically: Twitter 300/15min, OpenAI 500/min, etc.)
+- **Automatic retries** (transient failures get 3 attempts with exponential backoff)
+- **Structured logging** (know exactly what happened and when)
+- **Encryption** (all API keys/tokens encrypted with AES-256)
 
 This isn't a weekend project. It's built like you'd build production infrastructure.
 
@@ -110,7 +110,7 @@ See your workflows run in real-time with progress bars, step-by-step status, and
 *Real-time execution monitoring with detailed history and error tracking*
 
 ### Smart Output Formatting
-Results aren't just dumped as JSON. The AI formats them as tables, markdown, lists, or galleries depending on what makes sense. Trending GitHub repos? Table. YouTube video search? Gallery. Reddit posts? Markdown list with metadata.
+Results aren't just dumped as JSON. Claude Code formats them as tables, markdown, lists, or galleries depending on what makes sense. Trending GitHub repos? Table. YouTube video search? Gallery. Reddit posts? Markdown list with metadata.
 
 ### Infinitely Extensible (The Real Superpower)
 Here's where b0t destroys the competition: **you can customize literally anything.**
@@ -145,7 +145,7 @@ Built for agencies and teams. Manage automations for multiple clients/organizati
 
 |  | b0t | Zapier | n8n | Make.com |
 |---|-----|--------|-----|----------|
-| **How you build** | Chat with AI | Click through forms | Drag-and-drop nodes | Visual flowchart |
+| **How you build** | Claude Code conversation | Click through forms | Drag-and-drop nodes | Visual flowchart |
 | **Learning curve** | None (it's chat) | Low | High (technical) | Medium |
 | **Time to first workflow** | 2 minutes | 5 minutes | 30-60 minutes | 10 minutes |
 | **Complexity you can handle** | Very high | Low | Very high | High |
@@ -162,7 +162,7 @@ Built for agencies and teams. Manage automations for multiple clients/organizati
 | **AI integration** | Deep (Claude generates workflows) | Add-on | Manual setup | Manual setup |
 | **Open source** | AGPL-3.0 | No | Fair-code | No |
 
-**TL;DR:** If you want easy, go Zapier (but bring your credit card and accept their limitations). If you want powerful, go n8n (but bring your DevOps skills and accept their complexity). If you want both—easy, powerful, and infinitely customizable—for free, you're in the right place.
+**TL;DR:** If you want easy, go Zapier (but bring your credit card and accept their limitations). If you want powerful, go n8n (but bring your DevOps skills and accept their complexity). If you want both (easy, powerful, and infinitely customizable) for free, you're in the right place.
 
 ---
 
@@ -196,7 +196,7 @@ We ran comprehensive stress tests to verify real-world performance. Here's how b
 
 **1. Automatic Step-Level Parallelization**
 - b0t: Independent steps within a workflow run simultaneously (verified 3x speedup on multi-step workflows)
-- This is automatic—no configuration needed
+- This is automatic (no configuration needed)
 - n8n/Zapier/Make: Steps execute sequentially
 
 **2. Lightweight Execution Model**
@@ -227,7 +227,7 @@ We tested b0t with progressively higher loads to find the breaking point. **We r
 - ✅ Linear performance scaling (throughput increases with concurrency)
 
 **Test Environment:**
-- Hardware: MacBook Pro M1 (2 vCPU equivalent, 8GB RAM allocated)
+- Hardware: Apple M4 Pro (14 cores, 24GB RAM)
 - Configuration: Default dev settings (DB_POOL_MAX=20, WORKFLOW_CONCURRENCY=20)
 - Workflow: 3 datetime operations (lightweight, I/O-bound)
 
@@ -281,9 +281,9 @@ That script handles everything: dependencies, Docker containers (PostgreSQL + Re
 npm run dev
 ```
 
-Open http://localhost:3000, log in (admin@b0t.dev / admin), and start chatting.
+Open http://localhost:3000 and log in (admin@b0t.dev / admin).
 
-**First workflow:** Try asking the AI to "fetch trending GitHub repos and show them in a table." Watch it generate, validate, and execute a multi-step workflow in seconds.
+**First workflow:** Try asking Claude Code to "fetch trending GitHub repos and show them in a table." Watch it generate, validate, and execute a multi-step workflow in seconds.
 
 **Full setup guide:** [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)
 
@@ -298,7 +298,7 @@ Open http://localhost:3000, log in (admin@b0t.dev / admin), and start chatting.
 - TypeScript (everything is typed)
 - Drizzle ORM (type-safe queries, auto-migrations)
 - Tailwind + shadcn/ui (modern, accessible components)
-- Claude/GPT-4 (workflow generation via AI SDK)
+- Claude Code integration (workflow generation via conversation with Claude Sonnet 4.5, Haiku 4.5, or GLM 4.6)
 - Opossum (circuit breakers) + Bottleneck (rate limiting)
 - Pino (structured logging)
 - NextAuth v5 (authentication)
@@ -320,12 +320,12 @@ export async function getSubredditPosts(
 }
 ```
 
-Modules are auto-discovered. The AI reads a 3,300-line registry documenting every function, its signature, parameters, and examples. When you ask for something, it knows exactly which functions to use.
+Modules are auto-discovered. Claude Code reads a 3,300-line registry documenting every function, its signature, parameters, and examples. When you ask for something, it knows exactly which functions to use.
 
 **Execution Flow:**
 
 ```
-Chat message → Claude → Workflow JSON → Validation → BullMQ Queue → Worker Pool (10 concurrent) → Step-by-step execution → Results
+Claude Code conversation → Workflow JSON → Validation → Database → BullMQ Queue → Worker Pool (10 concurrent) → Step-by-step execution → Results
 ```
 
 **Performance:**
@@ -403,7 +403,7 @@ Open source. Self-hostable. No vendor lock-in. Fork it, modify it, deploy it, se
 
 If you've read this far, you're probably thinking "this sounds too good to be true."
 
-Fair. Here's the catch: it's early. Bugs exist. Some integrations need polish. The AI sometimes generates workflows that need tweaking. It's not as plug-and-play as Zapier (yet).
+Fair. Here's the catch: it's early. Bugs exist. Some integrations need polish. Claude Code sometimes generates workflows that need tweaking. It's not as plug-and-play as Zapier (yet).
 
 But here's what it **is**: a fundamentally different way to think about automation. One where you describe intent and the computer figures out implementation. Where you don't need to learn a visual editor or memorize API docs.
 
