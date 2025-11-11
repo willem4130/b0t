@@ -227,8 +227,10 @@ print_success "Redis is ready"
 # ============================================================================
 print_step "Step 5/7: Setting Up Database Schema"
 
-# Source .env.local to make DATABASE_URL available
-export $(grep -v '^#' .env.local | xargs)
+# Load environment variables from .env.local
+set -a  # automatically export all variables
+source .env.local
+set +a  # stop automatically exporting
 
 echo "Pushing database schema to PostgreSQL..."
 npm run db:push --silent || {
@@ -249,13 +251,13 @@ print_step "Step 6/7: Verifying Installation"
 
 # Check Docker containers
 echo "Checking Docker containers..."
-if docker compose ps | grep -q "postgres.*running"; then
+if docker ps --filter name=b0t-postgres --format "{{.Status}}" | grep -q "Up"; then
     print_success "PostgreSQL container running"
 else
     print_error "PostgreSQL container not running"
 fi
 
-if docker compose ps | grep -q "redis.*running"; then
+if docker ps --filter name=b0t-redis --format "{{.Status}}" | grep -q "Up"; then
     print_success "Redis container running"
 else
     print_error "Redis container not running"
