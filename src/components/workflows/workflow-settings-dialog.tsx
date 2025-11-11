@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { CronTriggerConfig } from './trigger-configs/cron-trigger-config';
 
 interface WorkflowSettingsDialogProps {
   workflowId: string;
@@ -151,6 +152,13 @@ export function WorkflowSettingsDialog({
       [fieldKey]: value,
     }));
   };
+
+  const handleCronConfigChange = useCallback((config: Record<string, unknown>) => {
+    setTriggerSettings((prev) => ({
+      ...prev,
+      ...config,
+    }));
+  }, []);
 
   const toggleStep = (stepKey: string) => {
     setOpenSteps((prev) => ({
@@ -373,8 +381,15 @@ export function WorkflowSettingsDialog({
                     />
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-3 px-1 space-y-3">
-                    {getTriggerFields(workflowTrigger.type, workflowTrigger.config).map((field) =>
-                      renderTriggerField(field)
+                    {workflowTrigger.type === 'cron' ? (
+                      <CronTriggerConfig
+                        initialConfig={triggerSettings}
+                        onConfigChange={handleCronConfigChange}
+                      />
+                    ) : (
+                      getTriggerFields(workflowTrigger.type, workflowTrigger.config).map((field) =>
+                        renderTriggerField(field)
+                      )
                     )}
                   </CollapsibleContent>
                 </Collapsible>

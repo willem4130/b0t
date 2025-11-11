@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { workflowsTable } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { workflowScheduler } from '@/lib/workflows/workflow-scheduler';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,13 +86,16 @@ export async function PATCH(
           )
         );
 
+      // Refresh scheduler to pick up status changes for cron/email triggers
+      await workflowScheduler.refresh();
+
       logger.info(
         {
           userId: session.user.id,
           workflowId: id,
           status: body.status,
         },
-        'Workflow status updated'
+        'Workflow status updated and scheduler refreshed'
       );
 
       return NextResponse.json({ success: true, status: body.status });
@@ -138,6 +142,11 @@ export async function PATCH(
             eq(workflowsTable.userId, session.user.id)
           )
         );
+
+      // Refresh scheduler if trigger was updated (for cron/email triggers)
+      if (body.trigger !== undefined) {
+        await workflowScheduler.refresh();
+      }
 
       logger.info(
         {
