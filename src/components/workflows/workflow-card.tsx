@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Download, Trash2, Play, Key, MessageSquare, Sliders, BarChart3, Pencil, Clock, Webhook, Send, FormInput, Mail } from 'lucide-react';
+import { Download, Trash2, Play, Key, MessageSquare, Sliders, BarChart3, Pencil, Clock, Webhook, Send, FormInput, Mail, ExternalLink } from 'lucide-react';
 import { WorkflowListItem } from '@/types/workflows';
 import { WorkflowExecutionDialog } from './workflow-execution-dialog';
 import { CredentialsConfigDialog } from './credentials-config-dialog';
@@ -25,6 +26,7 @@ interface WorkflowCardProps {
 }
 
 export function WorkflowCard({ workflow, onDeleted, onExport, onUpdated }: WorkflowCardProps) {
+  const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [optimisticStatus, setOptimisticStatus] = useState<string | null>(null);
@@ -36,6 +38,12 @@ export function WorkflowCard({ workflow, onDeleted, onExport, onUpdated }: Workf
   const [editName, setEditName] = useState(workflow.name);
   const [editDescription, setEditDescription] = useState(workflow.description || '');
   const [saving, setSaving] = useState(false);
+
+  // Check if this is the Aruba scraper workflow
+  const isArubaScraperWorkflow = workflow.name.toLowerCase().includes('aruba') &&
+                                  (workflow.name.toLowerCase().includes('housing') ||
+                                   workflow.name.toLowerCase().includes('scraper') ||
+                                   workflow.name.toLowerCase().includes('rental'));
 
   const handleDelete = async () => {
     toast(`Delete "${workflow.name}"?`, {
@@ -307,6 +315,18 @@ export function WorkflowCard({ workflow, onDeleted, onExport, onUpdated }: Workf
             <RunIcon className="h-3.5 w-3.5 mr-1 transition-transform duration-200 group-hover:scale-110" />
             <span className="text-xs">{runButtonConfig.label}</span>
           </Button>
+          {isArubaScraperWorkflow && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => { e.currentTarget.blur(); router.push('/dashboard/rentals'); }}
+              className="h-7 px-2 transition-all duration-200 hover:scale-105 active:scale-95 group bg-primary/10 hover:bg-primary/20"
+              title="View rental listings dashboard"
+            >
+              <ExternalLink className="h-3.5 w-3.5 mr-1 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <span className="text-xs">Dashboard</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
