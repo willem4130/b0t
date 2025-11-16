@@ -108,7 +108,7 @@ export function ChatInputTriggerConfig({ initialConfig, onConfigChange }: ChatIn
         </p>
       </div>
 
-      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-none">
         {fields.map((field, index) => (
           <div
             key={field.id}

@@ -805,7 +805,7 @@ export function CompactAutomationRow({
                   }
                 </DialogDescription>
               </DialogHeader>
-              <div className="overflow-y-auto max-h-[calc(85vh-8rem)]">
+              <div className="overflow-y-auto max-h-[calc(85vh-8rem)] scrollbar-none">
                 {jobName === 'reply-to-tweets' ? (
                   <ReplyHistoryTable />
                 ) : (

@@ -364,7 +364,7 @@ function JSONDisplay({ data, onClose }: { data: unknown; onClose?: () => void })
   return (
     <>
       <FloatingActionButtons content={jsonString} filename="output" format="json" onClose={onClose} />
-      <div className="rounded-lg border border-border/50 bg-muted/20 p-4 pt-16 overflow-y-auto max-h-[70vh]">
+      <div className="rounded-lg border border-border/50 bg-muted/20 p-4 pt-16 overflow-y-auto max-h-[70vh] scrollbar-none">
         {isValidJson ? (
           <ReactJson
             src={jsonData as object}

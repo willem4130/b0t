@@ -216,7 +216,7 @@ export function WebhookTriggerConfig({
               <p className="text-xs text-red-700 dark:text-red-300">{testResult.error}</p>
             )}
             {testResult.output !== undefined && (
-              <pre className="mt-2 text-xs bg-black/5 dark:bg-white/5 p-2 rounded overflow-auto max-h-32">
+              <pre className="mt-2 text-xs bg-black/5 dark:bg-white/5 p-2 rounded overflow-auto max-h-32 scrollbar-none">
                 {typeof testResult.output === 'string'
                   ? testResult.output
                   : JSON.stringify(testResult.output, null, 2)}

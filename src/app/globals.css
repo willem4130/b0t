@@ -338,6 +338,16 @@
     font-size: 0.875rem;
     line-height: 1.25rem;
   }
+
+  /* Hide scrollbars while maintaining scroll functionality */
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 }
 
 /* Ensure consistent font rendering across different DPI levels */

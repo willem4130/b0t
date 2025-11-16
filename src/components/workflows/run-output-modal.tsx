@@ -191,7 +191,7 @@ export function RunOutputModal({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className={isChatWorkflow ? "sm:max-w-2xl max-h-[85vh] flex flex-col" : "!max-w-[98vw] !w-[98vw] max-h-[95vh] overflow-auto p-6 pt-12"}
+          className={isChatWorkflow ? "sm:max-w-2xl max-h-[85vh] flex flex-col" : "!max-w-[98vw] !w-[98vw] max-h-[95vh] overflow-auto scrollbar-none p-6 pt-12"}
           showCloseButton={!hasOutput}
         >
           {isChatWorkflow ? (
@@ -224,7 +224,7 @@ export function RunOutputModal({
                 </p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto -mx-6 px-6">
+              <div className="flex-1 overflow-y-auto -mx-6 px-6 scrollbar-none">
                 <div className="relative overflow-hidden rounded-lg border-0 bg-gradient-to-br from-primary/5 via-blue-500/3 to-primary/5 backdrop-blur-sm shadow-sm">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-400 to-primary opacity-80" />
                   <table className="w-full mt-1">

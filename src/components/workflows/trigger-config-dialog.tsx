@@ -194,7 +194,7 @@ export function TriggerConfigDialog({
           <DialogDescription className="text-xs">{getTriggerDescription()}</DialogDescription>
         </DialogHeader>
 
-        <div className="overflow-y-auto py-3 px-1 -mx-1 flex-1">
+        <div className="overflow-y-auto py-3 px-1 -mx-1 flex-1 scrollbar-none">
           {renderTriggerConfig()}
 
           {(triggerType === 'chat' || triggerType === 'webhook') && (
