@@ -8,8 +8,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle2, XCircle, Clock, ExternalLink } from 'lucide-react';
 import { RunOutputModal } from './run-output-modal';
+import { useRouter } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
@@ -97,9 +99,14 @@ export function WorkflowOutputsDialog({
   const [outputModalOpen, setOutputModalOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Check if this is a chat workflow
   const isChatWorkflow = triggerType === 'chat';
+
+  // Check if this is the Aruba Housing Scraper workflow
+  const isArubaScraperWorkflow = workflowName.toLowerCase().includes('aruba') &&
+                                  workflowName.toLowerCase().includes('housing');
 
   useEffect(() => {
     if (open) {
@@ -237,10 +244,27 @@ export function WorkflowOutputsDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Workflow Outputs</DialogTitle>
-            <DialogDescription>
-              Viewing outputs from <span className="font-medium">{workflowName}</span>
-            </DialogDescription>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <DialogTitle>Workflow Outputs</DialogTitle>
+                <DialogDescription>
+                  Viewing outputs from <span className="font-medium">{workflowName}</span>
+                </DialogDescription>
+              </div>
+              {isArubaScraperWorkflow && (
+                <Button
+                  onClick={() => {
+                    router.push('/dashboard/rentals');
+                    onOpenChange(false);
+                  }}
+                  size="sm"
+                  className="gap-2 ml-4"
+                >
+                  View Listings
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           </DialogHeader>
 
           {loading ? (

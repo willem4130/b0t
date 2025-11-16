@@ -337,6 +337,50 @@ export const rentalListingsTable = pgTable('rental_listings', {
   createdAtIdx: index('rental_listings_created_at_idx').on(table.createdAt),
 }));
 
+// User favorites for rental listings
+export const rentalFavoritesTable = pgTable('rental_favorites', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  organizationId: varchar('organization_id', { length: 255 }),
+  listingId: integer('listing_id').notNull().references(() => rentalListingsTable.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('rental_favorites_user_id_idx').on(table.userId),
+  listingIdIdx: index('rental_favorites_listing_id_idx').on(table.listingId),
+  userListingIdx: uniqueIndex('rental_favorites_user_listing_idx').on(table.userId, table.listingId),
+}));
+
+// User comments on rental listings
+export const rentalCommentsTable = pgTable('rental_comments', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  organizationId: varchar('organization_id', { length: 255 }),
+  listingId: integer('listing_id').notNull().references(() => rentalListingsTable.id, { onDelete: 'cascade' }),
+  comment: text('comment').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('rental_comments_user_id_idx').on(table.userId),
+  listingIdIdx: index('rental_comments_listing_id_idx').on(table.listingId),
+  createdAtIdx: index('rental_comments_created_at_idx').on(table.createdAt),
+}));
+
+// User rankings/ratings for rental listings
+export const rentalRankingsTable = pgTable('rental_rankings', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }).notNull(),
+  organizationId: varchar('organization_id', { length: 255 }),
+  listingId: integer('listing_id').notNull().references(() => rentalListingsTable.id, { onDelete: 'cascade' }),
+  rating: integer('rating').notNull(), // 1-5 stars
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('rental_rankings_user_id_idx').on(table.userId),
+  listingIdIdx: index('rental_rankings_listing_id_idx').on(table.listingId),
+  userListingIdx: uniqueIndex('rental_rankings_user_listing_idx').on(table.userId, table.listingId),
+}));
+
 // ============================================
 // TYPE EXPORTS
 // ============================================
@@ -371,3 +415,9 @@ export type TweetReply = typeof tweetRepliesTable.$inferSelect;
 export type NewTweetReply = typeof tweetRepliesTable.$inferInsert;
 export type RentalListing = typeof rentalListingsTable.$inferSelect;
 export type NewRentalListing = typeof rentalListingsTable.$inferInsert;
+export type RentalFavorite = typeof rentalFavoritesTable.$inferSelect;
+export type NewRentalFavorite = typeof rentalFavoritesTable.$inferInsert;
+export type RentalComment = typeof rentalCommentsTable.$inferSelect;
+export type NewRentalComment = typeof rentalCommentsTable.$inferInsert;
+export type RentalRanking = typeof rentalRankingsTable.$inferSelect;
+export type NewRentalRanking = typeof rentalRankingsTable.$inferInsert;

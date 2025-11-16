@@ -7,7 +7,10 @@ Open-source, self-hostable workflow automation platform where you describe workf
 ```
 src/
   ├── app/              # Next.js App Router (pages, layouts, API routes)
+  │   ├── api/rentals/  # Rental listings API (favorites, comments, rankings)
+  │   └── dashboard/rentals/ # Rentals dashboard page
   ├── components/       # React UI components (workflows, credentials, clients)
+  │   └── rentals/      # Rental listing components (table, dialog, widgets)
   ├── lib/              # Core utilities (workflow engine, auth, db, queue, scheduler)
   ├── modules/          # 16 domain modules, 140+ services (AI, social, communication, business, etc.)
   ├── types/            # TypeScript type definitions
