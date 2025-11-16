@@ -106,7 +106,9 @@ export function WorkflowOutputsDialog({
 
   // Check if this is the Aruba Housing Scraper workflow
   const isArubaScraperWorkflow = workflowName.toLowerCase().includes('aruba') &&
-                                  workflowName.toLowerCase().includes('housing');
+                                  (workflowName.toLowerCase().includes('housing') ||
+                                   workflowName.toLowerCase().includes('scraper') ||
+                                   workflowName.toLowerCase().includes('rental'));
 
   useEffect(() => {
     if (open) {
@@ -244,10 +246,10 @@ export function WorkflowOutputsDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
+            <div className="flex items-start justify-between gap-4 pr-8">
+              <div className="flex-1 min-w-0">
                 <DialogTitle>Workflow Outputs</DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="truncate">
                   Viewing outputs from <span className="font-medium">{workflowName}</span>
                 </DialogDescription>
               </div>
@@ -258,7 +260,7 @@ export function WorkflowOutputsDialog({
                     onOpenChange(false);
                   }}
                   size="sm"
-                  className="gap-2 ml-4"
+                  className="gap-2 flex-shrink-0"
                 >
                   View Listings
                   <ExternalLink className="h-3 w-3" />
