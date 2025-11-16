@@ -4518,6 +4518,16 @@ export function getModuleRegistry(): ModuleCategory[] {
       name: 'social',
       modules: [
         {
+          name: 'facebook',
+          functions: [
+            {
+              name: 'getPostsWithComments',
+              description: "Convenience function: Get posts with all comments",
+              signature: 'getPostsWithComments(params)',
+            },
+          ],
+        },
+        {
           name: 'instagram',
           functions: [
             {
@@ -6422,6 +6432,11 @@ export function getModuleRegistry(): ModuleCategory[] {
           name: 'scraper',
           functions: [
             {
+              name: 'fetchRawHtml',
+              description: "Fetch raw HTML string from URL",
+              signature: 'fetchRawHtml(url)',
+            },
+            {
               name: 'fetchHtml',
               description: "Fetch and parse HTML from URL",
               signature: 'fetchHtml(url)',
@@ -6475,6 +6490,21 @@ export function getModuleRegistry(): ModuleCategory[] {
               name: 'extractStructuredData',
               description: "Extract structured data (JSON-LD)",
               signature: 'extractStructuredData($)',
+            },
+          ],
+        },
+        {
+          name: 'browser',
+          functions: [
+            {
+              name: 'fetchRenderedHtml',
+              description: "Fetch HTML from JavaScript-rendered website using headless browser",
+              signature: 'fetchRenderedHtml(url, options?)',
+            },
+            {
+              name: 'takeScreenshot',
+              description: "Take screenshot of webpage",
+              signature: 'takeScreenshot(url, options?)',
             },
           ],
         },

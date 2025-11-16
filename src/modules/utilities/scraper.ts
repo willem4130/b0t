@@ -48,6 +48,27 @@ export interface ScrapedMetaTags {
 }
 
 /**
+ * Fetch raw HTML string from URL
+ */
+export async function fetchRawHtml(url: string): Promise<string> {
+  logger.info({ url }, 'Fetching raw HTML from URL');
+
+  try {
+    const response = await httpGet(url);
+    const html = typeof response.data === 'string' ? response.data : String(response.data);
+
+    logger.info({ url, htmlLength: html.length }, 'Raw HTML fetched successfully');
+
+    return html;
+  } catch (error) {
+    logger.error({ error, url }, 'Failed to fetch raw HTML');
+    throw new Error(
+      `Failed to fetch raw HTML: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
  * Fetch and parse HTML from URL
  */
 export async function fetchHtml(url: string): Promise<cheerio.CheerioAPI> {

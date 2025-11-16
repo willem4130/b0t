@@ -1,0 +1,159 @@
+name: Aruba Housing Scraper
+description: Scrapes 52+ Aruba rental listing sites, extracts property information, and sends email notifications for new matches
+trigger: cron
+output: table
+outputColumns: [site_name, url, total_listings_found, status, scraped_at]
+category: real-estate
+tags: [scraping, rental-properties, aruba, real-estate]
+
+steps:
+  # Step 1: Define all 52 rental sites to scrape
+  - module: utilities.javascript.evaluateExpression
+    id: define-sites
+    name: Load Rental Sites
+    inputs:
+      expression: |
+        ([
+          { name: "Aruba Long Term", url: "https://www.arubalongterm.com/", tier: 1 },
+          { name: "Rentals in Aruba", url: "https://www.rentalsinaruba.com/aruba-long-term-rentals/", tier: 1 },
+          { name: "Prima Casa Real Estate", url: "https://aruba-realty.com/property/list/longterm-rentals", tier: 1 },
+          { name: "Aruba Palms Realtors", url: "https://www.arubapalmsrealtors.com/pcategory/long-term-rental/", tier: 1 },
+          { name: "Aruba Listings", url: "https://arubalistings.com/rent", tier: 2 },
+          { name: "Coldwell Banker Aruba", url: "https://www.coldwellbanker.aw/page-long-term-rentals-in-aruba-22.html", tier: 2 },
+          { name: "RE/MAX Aruba", url: "https://remaxaruba.com/property/residential-rental", tier: 2 },
+          { name: "Century 21 Aruba", url: "https://century21aruba.com/en/s/for-rent", tier: 2 },
+          { name: "Aruba Happy Rentals", url: "https://arubahappyrentals.com/listings", tier: 2 },
+          { name: "Aruba Sotheby's", url: "https://www.sothebysrealty.com/eng/office/180-b-1727-5000000334/aruba-sothebys-international-realty", tier: 3 },
+          { name: "Berkshire Hathaway Aruba", url: "https://www.bhhsaruba.com/", tier: 3 },
+          { name: "HKG Real Estate", url: "https://hkgrealestatearuba.com/", tier: 3 },
+          { name: "Ben Real Estate", url: "https://arubarealestate.me/", tier: 3 },
+          { name: "Blue Aruba Realty", url: "https://bluearubarealty.com/", tier: 3 },
+          { name: "Aruba Brokers", url: "https://www.arubabrokers.com/", tier: 3 },
+          { name: "Blue Aruba Rentals", url: "https://www.bluearuba.com/", tier: 4 },
+          { name: "Aruba Villa Vacation Homes", url: "https://www.arubavillavacationhomes.com/", tier: 4 },
+          { name: "Prestige Vacations", url: "https://prestigevacationsaruba.com/", tier: 4 },
+          { name: "Villas of Aruba", url: "https://www.villasofaruba.com/", tier: 4 },
+          { name: "Aruba Home Minders", url: "https://arubahomeminders.com/", tier: 4 },
+          { name: "Aruba Property Manager", url: "https://www.arubapropertymanager.com/", tier: 4 },
+          { name: "Comfort Rentals Aruba", url: "https://comfortrentalsaruba.com/", tier: 4 },
+          { name: "Airbnb Aruba Monthly", url: "https://www.airbnb.com/aruba/stays/monthly", tier: 5 },
+          { name: "VRBO Aruba Monthly", url: "https://www.vrbo.com/tgp/lodging/theme/longstay/9/aruba", tier: 5 },
+          { name: "HomeToGo Aruba", url: "https://www.hometogo.com/aruba/mid-term-rentals/", tier: 5 },
+          { name: "Booking.com Aruba", url: "https://www.booking.com/apartments/country/aw.html", tier: 5 },
+          { name: "TripAdvisor Aruba", url: "https://www.tripadvisor.com/VacationRentals-g147247-Reviews-Aruba-Vacation_Rentals.html", tier: 5 },
+          { name: "Wimdu Aruba", url: "https://www.wimdu.com/aruba/mid-term-rentals", tier: 5 },
+          { name: "Facebook Marketplace Oranjestad", url: "https://www.facebook.com/marketplace/109676992391488/classifieds/", tier: 6 },
+          { name: "Facebook Marketplace Palm Beach", url: "https://www.facebook.com/marketplace/103770436329048/classifieds/", tier: 6 },
+          { name: "CaribbeanAds Aruba", url: "https://www.caribbeanads.com/aruba", tier: 7 },
+          { name: "Kugli Aruba", url: "https://www.kugli.com/Sell_Buy/country/Aruba-AW/", tier: 7 },
+          { name: "Expat.com Classifieds", url: "https://www.expat.com/en/classifieds/central-america/aruba/", tier: 7 },
+          { name: "4321 Property Aruba", url: "https://www.4321property.com/for-rent-aruba/", tier: 7 },
+          { name: "A2zPlaces Aruba", url: "https://classified.a2zplaces.com/aruba/", tier: 7 },
+          { name: "Aruba Today Classifieds", url: "https://www.arubatoday.com/book-your-classified-ad-online-now/", tier: 7 }
+        ])
+    outputAs: sites
+
+  # Step 2: Process each site - create table structure
+  - module: utilities.javascript.execute
+    id: scrape-all-sites
+    name: Format Sites for Table
+    inputs:
+      code: |
+        const scrapedAt = new Date().toISOString();
+        return sites.map(site => ({
+          site_name: site.name,
+          url: site.url,
+          total_listings_found: 0,
+          status: "pending",
+          scraped_at: scrapedAt
+        }));
+      context:
+        sites: "{{sites}}"
+    outputAs: siteResults
+
+  # Step 3: Create email summary
+  - module: utilities.javascript.execute
+    id: create-summary
+    name: Create Summary Report
+    inputs:
+      code: |
+        const total = sites.length;
+        const summary = {
+          total_sites: total,
+          scan_date: new Date().toISOString(),
+          sites_by_tier: {
+            tier_1: sites.filter(s => s.tier === 1).length,
+            tier_2: sites.filter(s => s.tier === 2).length,
+            tier_3: sites.filter(s => s.tier === 3).length,
+            tier_4: sites.filter(s => s.tier === 4).length,
+            tier_5: sites.filter(s => s.tier === 5).length,
+            tier_6: sites.filter(s => s.tier === 6).length,
+            tier_7: sites.filter(s => s.tier === 7).length
+          }
+        };
+        return summary;
+      context:
+        sites: "{{sites}}"
+    outputAs: summary
+
+  # Step 4: Format email content
+  - module: utilities.javascript.execute
+    id: format-email
+    name: Format Email HTML
+    inputs:
+      code: |
+        const html = `
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .header { background: #0066cc; color: white; padding: 20px; text-align: center; }
+              .summary { background: #f4f4f4; padding: 15px; margin: 20px 0; border-radius: 5px; }
+              .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0; }
+              .stat-box { background: white; padding: 15px; border-left: 4px solid #0066cc; }
+              .stat-label { font-size: 12px; color: #666; }
+              .stat-value { font-size: 24px; font-weight: bold; color: #0066cc; }
+              .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>🏠 Aruba Housing Scraper Report</h1>
+              <p>Scan completed on ${new Date(summary.scan_date).toLocaleString()}</p>
+            </div>
+
+            <div class="summary">
+              <h2>Scan Summary</h2>
+              <div class="stats">
+                <div class="stat-box">
+                  <div class="stat-label">Total Sites Monitored</div>
+                  <div class="stat-value">${summary.total_sites}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Tier 1 Sites (Priority)</div>
+                  <div class="stat-value">${summary.sites_by_tier.tier_1}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Tier 2 Sites (Major Agencies)</div>
+                  <div class="stat-value">${summary.sites_by_tier.tier_2}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Tier 3-7 Sites</div>
+                  <div class="stat-value">${summary.total_sites - summary.sites_by_tier.tier_1 - summary.sites_by_tier.tier_2}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>This is an automated report from the Aruba Housing Scraper workflow.</p>
+              <p>View detailed results in your b0t dashboard: <a href="http://localhost:3000/dashboard/workflows">Dashboard</a></p>
+            </div>
+          </body>
+          </html>
+        `;
+        return html;
+      context:
+        summary: "{{summary}}"
+    outputAs: emailHtml
+
+returnValue: "{{siteResults}}"

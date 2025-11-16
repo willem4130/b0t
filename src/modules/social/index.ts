@@ -13,3 +13,4 @@ export * as twitter from './twitter';
 export * as instagram from './instagram';
 export * as youtube from './youtube';
 export * as linkedin from './linkedin';
+export * as facebook from './facebook';

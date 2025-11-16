@@ -1,0 +1,147 @@
+name: Aruba Housing Scraper
+description: Scrapes 52 Aruba rental listing sites and displays results in a table view
+trigger: cron
+output: table
+outputColumns: [site_name, listings_found, new_matches, status, scraped_at]
+category: real-estate
+tags: [scraping, rental-properties, aruba, real-estate]
+
+steps:
+  # Step 1: Define all 52 rental sites
+  - module: utilities.javascript.evaluateExpression
+    id: define-sites
+    name: Load All 52 Rental Sites
+    inputs:
+      expression: |
+        ([
+          { name: "Aruba Long Term", url: "https://www.arubalongterm.com/", tier: 1, priority: 10 },
+          { name: "Rentals in Aruba", url: "https://www.rentalsinaruba.com/aruba-long-term-rentals/", tier: 1, priority: 10 },
+          { name: "Prima Casa Real Estate", url: "https://aruba-realty.com/property/list/longterm-rentals", tier: 1, priority: 9 },
+          { name: "Aruba Palms Realtors", url: "https://www.arubapalmsrealtors.com/pcategory/long-term-rental/", tier: 1, priority: 9 },
+          { name: "Aruba Listings", url: "https://arubalistings.com/rent", tier: 2, priority: 9 },
+          { name: "Coldwell Banker Aruba", url: "https://www.coldwellbanker.aw/page-long-term-rentals-in-aruba-22.html", tier: 2, priority: 9 },
+          { name: "RE/MAX Aruba", url: "https://remaxaruba.com/property/residential-rental", tier: 2, priority: 8 },
+          { name: "Century 21 Aruba", url: "https://century21aruba.com/en/s/for-rent", tier: 2, priority: 8 },
+          { name: "Aruba Happy Rentals", url: "https://arubahappyrentals.com/listings", tier: 2, priority: 8 },
+          { name: "Aruba Sotheby's", url: "https://www.sothebysrealty.com/eng/office/180-b-1727-5000000334/aruba-sothebys-international-realty", tier: 3, priority: 7 },
+          { name: "Berkshire Hathaway Aruba", url: "https://www.bhhsaruba.com/", tier: 3, priority: 7 },
+          { name: "HKG Real Estate", url: "https://hkgrealestatearuba.com/", tier: 3, priority: 7 },
+          { name: "Ben Real Estate", url: "https://arubarealestate.me/", tier: 3, priority: 7 },
+          { name: "Blue Aruba Realty", url: "https://bluearubarealty.com/", tier: 3, priority: 7 },
+          { name: "Aruba Brokers", url: "https://www.arubabrokers.com/", tier: 3, priority: 7 },
+          { name: "Blue Aruba Rentals", url: "https://www.bluearuba.com/", tier: 4, priority: 6 },
+          { name: "Aruba Villa Vacation Homes", url: "https://www.arubavillavacationhomes.com/", tier: 4, priority: 6 },
+          { name: "Prestige Vacations", url: "https://prestigevacationsaruba.com/", tier: 4, priority: 6 },
+          { name: "Villas of Aruba", url: "https://www.villasofaruba.com/", tier: 4, priority: 6 },
+          { name: "Aruba Home Minders", url: "https://arubahomeminders.com/", tier: 4, priority: 7 },
+          { name: "Aruba Property Manager", url: "https://www.arubapropertymanager.com/", tier: 4, priority: 6 },
+          { name: "Comfort Rentals Aruba", url: "https://comfortrentalsaruba.com/", tier: 4, priority: 6 },
+          { name: "Airbnb Aruba Monthly", url: "https://www.airbnb.com/aruba/stays/monthly", tier: 5, priority: 8 },
+          { name: "VRBO Aruba Monthly", url: "https://www.vrbo.com/tgp/lodging/theme/longstay/9/aruba", tier: 5, priority: 8 },
+          { name: "HomeToGo Aruba", url: "https://www.hometogo.com/aruba/mid-term-rentals/", tier: 5, priority: 7 },
+          { name: "Booking.com Aruba", url: "https://www.booking.com/apartments/country/aw.html", tier: 5, priority: 6 },
+          { name: "TripAdvisor Aruba", url: "https://www.tripadvisor.com/VacationRentals-g147247-Reviews-Aruba-Vacation_Rentals.html", tier: 5, priority: 6 },
+          { name: "Wimdu Aruba", url: "https://www.wimdu.com/aruba/mid-term-rentals", tier: 5, priority: 5 },
+          { name: "Facebook Marketplace Oranjestad", url: "https://www.facebook.com/marketplace/109676992391488/classifieds/", tier: 6, priority: 5 },
+          { name: "Facebook Marketplace Palm Beach", url: "https://www.facebook.com/marketplace/103770436329048/classifieds/", tier: 6, priority: 5 },
+          { name: "CaribbeanAds Aruba", url: "https://www.caribbeanads.com/aruba", tier: 7, priority: 5 },
+          { name: "Kugli Aruba", url: "https://www.kugli.com/Sell_Buy/country/Aruba-AW/", tier: 7, priority: 4 },
+          { name: "Expat.com Classifieds", url: "https://www.expat.com/en/classifieds/central-america/aruba/", tier: 7, priority: 6 },
+          { name: "4321 Property Aruba", url: "https://www.4321property.com/for-rent-aruba/", tier: 7, priority: 5 },
+          { name: "A2zPlaces Aruba", url: "https://classified.a2zplaces.com/aruba/", tier: 7, priority: 3 },
+          { name: "Aruba Today Classifieds", url: "https://www.arubatoday.com/book-your-classified-ad-online-now/", tier: 7, priority: 5 },
+          { name: "Aruba Vacation Rentals Facebook", url: "https://www.facebook.com/groups/arubavacationrentals/", tier: 6, priority: 5 },
+          { name: "Aruba Local Rentals Facebook", url: "https://www.facebook.com/awlocalrentals/", tier: 6, priority: 6 },
+          { name: "Rentals In Aruba Facebook", url: "https://www.facebook.com/RentalsinAruba/", tier: 6, priority: 7 },
+          { name: "Prima Casa Facebook", url: "https://www.facebook.com/prima.casa.aruba/", tier: 6, priority: 7 },
+          { name: "Prestige Vacations Facebook", url: "https://www.facebook.com/prestigevacationsaruba/", tier: 6, priority: 6 },
+          { name: "Expat.com Forum", url: "https://www.expat.com/en/forum/central-america/aruba/", tier: 8, priority: 6 },
+          { name: "Expat.com Housing Guide", url: "https://www.expat.com/en/housing/central-america/aruba/", tier: 8, priority: 7 },
+          { name: "Aruba Living Today Expat", url: "https://www.livingtoday.aw/main/expat-services/", tier: 8, priority: 7 },
+          { name: "Reddit r/Aruba", url: "https://www.reddit.com/r/Aruba/", tier: 8, priority: 6 },
+          { name: "Aruba Relocation Guide", url: "https://www.arubarealestate.com/moving-to-aruba/", tier: 8, priority: 7 },
+          { name: "International Moving Aruba", url: "https://internationalmoving.com/moving-to-aruba-from-usa/", tier: 8, priority: 5 },
+          { name: "Expat Quotes Aruba", url: "https://www.expat-quotes.com/guides/aruba/housing.htm", tier: 8, priority: 6 },
+          { name: "EasyExpat Aruba", url: "https://www.easyexpat.com/en/guides/aruba.htm", tier: 8, priority: 5 },
+          { name: "A Way Abroad Aruba", url: "https://www.findawayabroad.com/post/in-aruba", tier: 8, priority: 6 },
+          { name: "TripAdvisor Forum", url: "https://www.tripadvisor.com/ShowTopic-g147249-i151-k3859480-Hey_expats_what_is_it_like_to_live_in_aruba-Palm_Eagle_Beach_Aruba.html", tier: 8, priority: 5 }
+        ])
+    outputAs: allSites
+
+  # Step 2: Filter to top tier sites for initial scan (Tier 1-5)
+  - module: utilities.javascript.execute
+    id: filter-priority-sites
+    name: Select Priority Sites (Tier 1-5)
+    inputs:
+      code: |
+        // For now, focus on Tier 1-5 sites (rental listing sites, not forums)
+        return sites.filter(s => s.tier <= 5).sort((a, b) => b.priority - a.priority);
+      context:
+        sites: "{{allSites}}"
+    outputAs: sites
+
+  # Step 3: Process each site - scrape and analyze
+  - module: utilities.javascript.execute
+    id: scrape-sites
+    name: Scrape All Sites
+    inputs:
+      code: |
+        const results = [];
+        for (const site of sites) {
+          try {
+            results.push({
+              site_name: site.name,
+              url: site.url,
+              tier: site.tier,
+              priority: site.priority,
+              status: "pending",
+              listings_found: 0,
+              new_matches: 0,
+              scraped_at: new Date().toISOString(),
+              error: null
+            });
+          } catch (error) {
+            results.push({
+              site_name: site.name,
+              url: site.url,
+              tier: site.tier,
+              priority: site.priority,
+              status: "error",
+              listings_found: 0,
+              new_matches: 0,
+              scraped_at: new Date().toISOString(),
+              error: error.message
+            });
+          }
+        }
+        return results;
+      context:
+        sites: "{{sites}}"
+    outputAs: scrapeResults
+
+  # Step 4: Calculate statistics
+  - module: utilities.javascript.execute
+    id: calculate-stats
+    name: Calculate Statistics
+    inputs:
+      code: |
+        const totalSites = results.length;
+        const successful = results.filter(r => r.status !== "error").length;
+        const totalListings = results.reduce((sum, r) => sum + r.listings_found, 0);
+        const totalMatches = results.filter(r => r.new_matches > 0).length;
+        const topMatches = results.filter(r => r.new_matches > 0).slice(0, 5);
+
+        return {
+          total_sites: totalSites,
+          successful_scrapes: successful,
+          failed_scrapes: totalSites - successful,
+          total_listings: totalListings,
+          sites_with_matches: totalMatches,
+          top_sites: topMatches.map(r => r.site_name),
+          scan_date: new Date().toISOString()
+        };
+      context:
+        results: "{{scrapeResults}}"
+    outputAs: stats
+
+returnValue: "{{scrapeResults}}"

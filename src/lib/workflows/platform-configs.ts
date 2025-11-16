@@ -167,6 +167,22 @@ export const PLATFORM_CONFIGS: Record<string, PlatformConfig> = {
     ]
   },
 
+  facebook: {
+    id: 'facebook',
+    name: 'Facebook',
+    category: 'Social Media',
+    fields: [
+      {
+        key: 'access_token',
+        label: 'Page Access Token',
+        type: 'password',
+        required: true,
+        placeholder: 'EAAxxxxx...',
+        description: 'Page Access Token from Facebook Developer Portal (requires pages_read_engagement permission)'
+      }
+    ]
+  },
+
   tiktok: {
     id: 'tiktok',
     name: 'TikTok',

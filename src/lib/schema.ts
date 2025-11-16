@@ -295,6 +295,48 @@ export const tweetRepliesTable = pgTable('tweet_replies', {
   createdAtIdx: index('tweet_replies_created_at_idx').on(table.createdAt),
 }));
 
+// Aruba rental listings table (stores scraped rental property data)
+export const rentalListingsTable = pgTable('rental_listings', {
+  id: serial('id').primaryKey(),
+  userId: varchar('user_id', { length: 255 }),
+  organizationId: varchar('organization_id', { length: 255 }),
+  workflowId: varchar('workflow_id', { length: 255 }),
+  siteName: varchar('site_name', { length: 255 }).notNull(),
+  siteUrl: text('site_url').notNull(),
+  listingUrl: text('listing_url'),
+  title: text('title'),
+  description: text('description'),
+  price: varchar('price', { length: 100 }),
+  priceNumeric: integer('price_numeric'),
+  bedrooms: integer('bedrooms'),
+  bathrooms: integer('bathrooms'),
+  hasPool: integer('has_pool').default(0),
+  hasGarden: integer('has_garden').default(0),
+  propertyType: varchar('property_type', { length: 100 }),
+  contactEmail: varchar('contact_email', { length: 255 }),
+  contactPhone: varchar('contact_phone', { length: 100 }),
+  location: varchar('location', { length: 255 }),
+  images: text('images').$type<string[]>(),
+  amenities: text('amenities').$type<string[]>(),
+  isMatch: integer('is_match').default(0),
+  matchScore: integer('match_score').default(0),
+  rawHtml: text('raw_html'),
+  metadata: jsonb('metadata'),
+  scrapedAt: timestamp('scraped_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('rental_listings_user_id_idx').on(table.userId),
+  organizationIdIdx: index('rental_listings_organization_id_idx').on(table.organizationId),
+  workflowIdIdx: index('rental_listings_workflow_id_idx').on(table.workflowId),
+  siteNameIdx: index('rental_listings_site_name_idx').on(table.siteName),
+  isMatchIdx: index('rental_listings_is_match_idx').on(table.isMatch),
+  priceIdx: index('rental_listings_price_idx').on(table.priceNumeric),
+  bedroomsIdx: index('rental_listings_bedrooms_idx').on(table.bedrooms),
+  scrapedAtIdx: index('rental_listings_scraped_at_idx').on(table.scrapedAt),
+  createdAtIdx: index('rental_listings_created_at_idx').on(table.createdAt),
+}));
+
 // ============================================
 // TYPE EXPORTS
 // ============================================
@@ -327,3 +369,5 @@ export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export type NewChatMessage = typeof chatMessagesTable.$inferInsert;
 export type TweetReply = typeof tweetRepliesTable.$inferSelect;
 export type NewTweetReply = typeof tweetRepliesTable.$inferInsert;
+export type RentalListing = typeof rentalListingsTable.$inferSelect;
+export type NewRentalListing = typeof rentalListingsTable.$inferInsert;
