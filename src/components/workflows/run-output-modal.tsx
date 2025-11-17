@@ -132,14 +132,16 @@ export function RunOutputModal({
         if (value && typeof value === 'object' && key in value) {
           value = (value as Record<string, unknown>)[key];
         } else {
-          // Path not found, use original output
-          console.warn(`[RunOutputModal] returnValue path "${path}" not found in output, using full output`);
+          // Path not found - this is expected when executor already extracted the value
+          // Only warn if the output doesn't look like it was already extracted
+          if (value === run?.output && typeof value === 'object' && !Array.isArray(value)) {
+            console.warn(`[RunOutputModal] returnValue path "${path}" not found in output, using full output`);
+          }
           value = run?.output;
           break;
         }
       }
 
-      console.log(`[RunOutputModal] Applied returnValue: "${returnValue}", extracted:`, Array.isArray(value) ? `array[${value.length}]` : typeof value);
       processedOutput = value;
     }
   } else if (returnValue && run?.output && Array.isArray(run.output)) {
@@ -189,7 +191,7 @@ export function RunOutputModal({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className={isChatWorkflow ? "sm:max-w-2xl max-h-[85vh] flex flex-col" : "!max-w-[98vw] !w-[98vw] max-h-[95vh] overflow-auto p-6 pt-12"}
+          className={isChatWorkflow ? "sm:max-w-2xl max-h-[85vh] flex flex-col" : "!max-w-[98vw] !w-[98vw] max-h-[95vh] overflow-auto scrollbar-none p-6 pt-12"}
           showCloseButton={!hasOutput}
         >
           {isChatWorkflow ? (
@@ -222,7 +224,7 @@ export function RunOutputModal({
                 </p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto -mx-6 px-6">
+              <div className="flex-1 overflow-y-auto -mx-6 px-6 scrollbar-none">
                 <div className="relative overflow-hidden rounded-lg border-0 bg-gradient-to-br from-primary/5 via-blue-500/3 to-primary/5 backdrop-blur-sm shadow-sm">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-400 to-primary opacity-80" />
                   <table className="w-full mt-1">

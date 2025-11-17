@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { oauthStateTable, userCredentialsTable } from '@/lib/schema';
 import { logger } from '@/lib/logger';
-import { decrypt } from '@/lib/encryption';
+import { getOAuthAppCredentials } from '@/lib/oauth-credential-helper';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -45,16 +45,15 @@ export async function GET() {
       );
     }
 
-    // Decrypt and parse the OAuth app credentials
-    const decrypted = decrypt(appCred.encryptedValue);
-    const credentials = JSON.parse(decrypted);
-    const clientId = credentials.client_id;
-    const clientSecret = credentials.client_secret;
-
-    if (!clientId || !clientSecret) {
-      logger.error('Invalid Outlook OAuth app credentials');
+    // Get client credentials
+    let clientId: string;
+    try {
+      const creds = getOAuthAppCredentials(appCred, 'Outlook');
+      clientId = creds.clientId;
+    } catch (error) {
+      logger.error({ error }, 'Failed to get Outlook OAuth app credentials');
       return NextResponse.json(
-        { error: 'Invalid Outlook OAuth app credentials. Please re-add the credentials.' },
+        { error: error instanceof Error ? error.message : 'Invalid Outlook OAuth app credentials' },
         { status: 500 }
       );
     }
@@ -62,7 +61,7 @@ export async function GET() {
     // Generate callback URL
     const callbackUrl = process.env.NEXTAUTH_URL
       ? `${process.env.NEXTAUTH_URL}/api/auth/outlook/callback`
-      : 'http://localhost:3000/api/auth/outlook/callback';
+      : 'http://localhost:3123/api/auth/outlook/callback';
 
     // Generate random state for CSRF protection
     const state = crypto.randomBytes(32).toString('hex');

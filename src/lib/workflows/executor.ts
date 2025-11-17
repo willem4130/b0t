@@ -329,23 +329,14 @@ function resolveValue(value: unknown, variables: Record<string, unknown>): unkno
       const path = match[1];
       const resolved = getNestedValue(variables, path);
 
-      // Debug logging for credential resolution
-      if (path.startsWith('credential.')) {
-        console.log('=== CREDENTIAL RESOLUTION DEBUG ===');
+      // Debug logging for variable resolution
+      if (path.startsWith('aiReply') || path.includes('aiReply')) {
+        console.log('=== AI REPLY RESOLUTION DEBUG ===');
         console.log('Path:', path);
-        console.log('Resolved value:', resolved ? `***VALUE_LENGTH_${String(resolved).length}***` : 'UNDEFINED');
-        console.log('Resolved is string?', typeof resolved === 'string');
-        console.log('variables.credential type:', typeof variables.credential);
-        console.log('variables.credential is object?', variables.credential && typeof variables.credential === 'object');
-        console.log('Available credential keys:', Object.keys(variables.credential || {}));
-        console.log('Specific key exists?', path.split('.')[1] in (variables.credential as Record<string, unknown> || {}));
+        console.log('Resolved value:', resolved);
+        console.log('Resolved type:', typeof resolved);
+        console.log('variables.aiReply:', variables.aiReply);
         console.log('===================================');
-
-        logger.info({
-          path,
-          resolved: resolved ? '***PRESENT***' : undefined,
-          availableCredentials: Object.keys(variables.credential || {}),
-        }, 'DEBUG: Resolving credential variable');
       }
 
       return resolved;
@@ -492,13 +483,30 @@ async function executeModuleFunction(
       // Only inject if apiKey is not already provided
       if (!options.apiKey) {
         const model = options.model as string | undefined;
+        const provider = options.provider as string | undefined;
 
-        // Detect provider from model name
+        // Determine credential key based on explicit provider or model name
         let credentialKey: string | undefined;
-        if (model?.startsWith('gpt-')) {
-          credentialKey = 'openai_api_key';
-        } else if (model?.startsWith('claude-')) {
-          credentialKey = 'anthropic_api_key';
+
+        if (provider) {
+          // Use explicit provider if set (from workflow settings)
+          if (provider === 'openai') {
+            credentialKey = 'openai_api_key';
+          } else if (provider === 'anthropic') {
+            credentialKey = 'anthropic_api_key';
+          } else if (provider === 'openrouter') {
+            credentialKey = 'openrouter_api_key';
+          }
+        } else if (model) {
+          // Fall back to detecting from model name
+          if (model.startsWith('gpt-') || model.startsWith('o1') || model.startsWith('o3')) {
+            credentialKey = 'openai_api_key';
+          } else if (model.startsWith('claude-')) {
+            credentialKey = 'anthropic_api_key';
+          } else if (model.includes('/')) {
+            // OpenRouter models contain a slash (e.g., 'openai/gpt-4o')
+            credentialKey = 'openrouter_api_key';
+          }
         }
 
         if (credentialKey && context.variables.credential) {
@@ -512,6 +520,7 @@ async function executeModuleFunction(
             logger.info({
               modulePath,
               model,
+              provider,
               credentialKey
             }, 'Auto-injected AI API key from credentials');
           }
@@ -868,6 +877,7 @@ async function loadUserCredentialsFromDB(userId: string): Promise<Record<string,
     const platformAliases: Record<string, string[]> = {
       'youtube': ['youtube_apikey', 'youtube_api_key', 'youtube'],
       'twitter': ['twitter_oauth2', 'twitter_oauth', 'twitter'],
+      'twitter-oauth': ['twitter_oauth2', 'twitter_oauth', 'twitter'], // Module name: social.twitter-oauth
       'github': ['github_oauth', 'github'],
       'google-sheets': ['googlesheets', 'googlesheets_oauth'],
       'googlesheets': ['googlesheets', 'googlesheets_oauth'],
@@ -883,6 +893,7 @@ async function loadUserCredentialsFromDB(userId: string): Promise<Record<string,
       'rapidapi': ['rapidapi_api_key', 'rapidapi'],
       'openai': ['openai_api_key', 'openai'],
       'anthropic': ['anthropic_api_key', 'anthropic'],
+      'openrouter': ['openrouter_api_key', 'openrouter'],
     };
 
     // Apply aliases: check if any credential ID in the list exists, then make it available under all alias names

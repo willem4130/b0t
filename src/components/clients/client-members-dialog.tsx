@@ -12,14 +12,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
-import { Users, Plus, Trash2, Mail } from 'lucide-react';
+import { Users, Plus, Trash2, Mail, ChevronsUpDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Member {
@@ -62,6 +66,7 @@ export function ClientMembersDialog({ clientId, clientName, open, onOpenChange }
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'admin' | 'member' | 'viewer'>('member');
   const [isInviting, setIsInviting] = useState(false);
+  const [roleSelectOpen, setRoleSelectOpen] = useState(false);
 
   const fetchMembers = async () => {
     setIsLoading(true);
@@ -188,16 +193,60 @@ export function ClientMembersDialog({ clientId, clientName, open, onOpenChange }
             </div>
             <div>
               <Label htmlFor="role" className="mb-2 block">Role</Label>
-              <Select value={inviteRole} onValueChange={(value: 'admin' | 'member' | 'viewer') => setInviteRole(value)}>
-                <SelectTrigger id="role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" align="start" sideOffset={4} alignOffset={0}>
-                  <SelectItem value="admin">Admin - Full access</SelectItem>
-                  <SelectItem value="member">Member - Can create and edit workflows</SelectItem>
-                  <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
-                </SelectContent>
-              </Select>
+              <Popover open={roleSelectOpen} onOpenChange={setRoleSelectOpen} modal={true}>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="role"
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={roleSelectOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {inviteRole === 'admin' ? 'Admin - Full access' :
+                     inviteRole === 'member' ? 'Member - Can create and edit workflows' :
+                     'Viewer - Read-only access'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                  <Command>
+                    <CommandList className="max-h-[300px]">
+                      <CommandGroup>
+                        <CommandItem
+                          value="admin"
+                          onSelect={() => {
+                            setInviteRole('admin');
+                            setRoleSelectOpen(false);
+                          }}
+                        >
+                          <Check className={`mr-2 h-4 w-4 ${inviteRole === 'admin' ? 'opacity-100' : 'opacity-0'}`} />
+                          Admin - Full access
+                        </CommandItem>
+                        <CommandItem
+                          value="member"
+                          onSelect={() => {
+                            setInviteRole('member');
+                            setRoleSelectOpen(false);
+                          }}
+                        >
+                          <Check className={`mr-2 h-4 w-4 ${inviteRole === 'member' ? 'opacity-100' : 'opacity-0'}`} />
+                          Member - Can create and edit workflows
+                        </CommandItem>
+                        <CommandItem
+                          value="viewer"
+                          onSelect={() => {
+                            setInviteRole('viewer');
+                            setRoleSelectOpen(false);
+                          }}
+                        >
+                          <Check className={`mr-2 h-4 w-4 ${inviteRole === 'viewer' ? 'opacity-100' : 'opacity-0'}`} />
+                          Viewer - Read-only access
+                        </CommandItem>
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <Button onClick={handleInvite} disabled={isInviting} className="w-full">
               <Plus className="h-4 w-4 mr-2" />

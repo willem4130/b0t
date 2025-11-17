@@ -6,10 +6,7 @@ import { ClientProvider } from "@/components/providers/ClientProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLoader } from "@/components/ui/app-loader";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-
-// Force dynamic rendering for all pages
-export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
+import { ChatFAB } from "@/components/agent-chat/ChatFAB";
 
 const interHeading = Inter({
   weight: ["500", "600", "700"],
@@ -54,6 +51,7 @@ export default function RootLayout({
             </ClientProvider>
           </SessionProvider>
         </ErrorBoundary>
+        <ChatFAB />
         <Toaster />
       </body>
     </html>

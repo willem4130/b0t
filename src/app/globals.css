@@ -251,6 +251,7 @@
     background-color: var(--muted);
   }
 
+
   /* Fix prose text colors for dark theme */
   .prose-invert {
     --tw-prose-body: var(--gray-1000);
@@ -338,6 +339,16 @@
     font-size: 0.875rem;
     line-height: 1.25rem;
   }
+
+  /* Hide scrollbars while maintaining scroll functionality */
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
 }
 
 /* Ensure consistent font rendering across different DPI levels */
@@ -350,6 +361,11 @@
 /* Smooth scrolling for the entire page */
 html {
   scroll-behavior: smooth;
+}
+
+/* Ensure all buttons have pointer cursor */
+button[data-slot="button"] {
+  cursor: pointer;
 }
 
 /* Professional animations */

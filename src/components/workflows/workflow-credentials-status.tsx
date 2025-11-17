@@ -2,18 +2,22 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, X, ExternalLink, Key, Unplug } from 'lucide-react';
+import { Check, X, ExternalLink, Key, Unplug, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import * as Icons from 'lucide-react';
+  Command,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { toast } from 'sonner';
+import { getIcon } from '@/lib/icon-map';
 
 interface OAuthAccount {
   id: string;
@@ -47,6 +51,7 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
   const [credentials, setCredentials] = useState<CredentialStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCredentials, setSelectedCredentials] = useState<Record<string, string>>({});
+  const [openPopovers, setOpenPopovers] = useState<Record<string, boolean>>({});
 
   const fetchCredentials = useCallback(async () => {
     try {
@@ -175,7 +180,7 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
       <div className="text-xs font-medium text-muted-foreground">Required Credentials:</div>
       <div className="space-y-1.5">
         {credentials.map((cred) => {
-          const IconComponent = (Icons as unknown as Record<string, typeof Key>)[cred.icon] || Key;
+          const IconComponent = getIcon(cred.icon);
 
           // 'both' or 'optional' type - show both OAuth and API key options
           if ((cred.type === 'both' || cred.type === 'optional') && (cred.accounts.length > 0 || cred.keys.length > 0)) {
@@ -277,6 +282,9 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
 
           // OAuth platform with multiple accounts
           if (cred.type === 'oauth' && cred.accounts.length > 1) {
+            const selectedValue = selectedCredentials[cred.platform] || cred.accounts[0]?.id;
+            const selectedAccount = cred.accounts.find(acc => acc.id === selectedValue);
+
             return (
               <div
                 key={cred.platform}
@@ -285,26 +293,53 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <IconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                   <span className="text-xs font-medium truncate text-foreground">{cred.displayName}</span>
-                  <Select
-                    value={selectedCredentials[cred.platform] || cred.accounts[0]?.id}
-                    onValueChange={(value) => handleCredentialSelect(cred.platform, value)}
-                  >
-                    <SelectTrigger className="h-6 text-xs w-auto min-w-[120px] py-0 text-foreground transition-all duration-200 hover:bg-muted">
-                      <SelectValue placeholder="Select account" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background text-foreground">
-                      {cred.accounts.map((account) => (
-                        <SelectItem key={account.id} value={account.id} className="text-xs py-1 min-h-0 text-foreground">
-                          <div className="flex items-center gap-1">
-                            {account.accountName}
-                            {account.isExpired && (
+                  <Popover open={openPopovers[`oauth-${cred.platform}`]} onOpenChange={(open) => setOpenPopovers({ ...openPopovers, [`oauth-${cred.platform}`]: open })} modal={true}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openPopovers[`oauth-${cred.platform}`]}
+                        className="h-6 text-xs w-auto min-w-[120px] py-0 text-foreground transition-all duration-200 hover:bg-muted font-normal"
+                      >
+                        {selectedAccount ? (
+                          <span className="flex items-center gap-1">
+                            {selectedAccount.accountName}
+                            {selectedAccount.isExpired && (
                               <span className="text-red-500 text-[10px]">(Expired)</span>
                             )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          </span>
+                        ) : 'Select account'}
+                        <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                      <Command>
+                        <CommandList className="max-h-[300px]">
+                          <CommandGroup>
+                            {cred.accounts.map((account) => (
+                              <CommandItem
+                                key={account.id}
+                                value={account.id}
+                                onSelect={() => {
+                                  handleCredentialSelect(cred.platform, account.id);
+                                  setOpenPopovers({ ...openPopovers, [`oauth-${cred.platform}`]: false });
+                                }}
+                                className="text-xs py-1 min-h-0"
+                              >
+                                <Check className={`mr-2 h-3 w-3 ${selectedValue === account.id ? 'opacity-100' : 'opacity-0'}`} />
+                                <div className="flex items-center gap-1">
+                                  {account.accountName}
+                                  {account.isExpired && (
+                                    <span className="text-red-500 text-[10px]">(Expired)</span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
@@ -385,6 +420,9 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
 
           // API key platform with multiple keys
           if (cred.type === 'api_key' && cred.keys.length > 1) {
+            const selectedValue = selectedCredentials[cred.platform] || cred.keys[0]?.id;
+            const selectedKey = cred.keys.find(key => key.id === selectedValue);
+
             return (
               <div
                 key={cred.platform}
@@ -393,21 +431,41 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <IconComponent className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
                   <span className="text-xs font-medium truncate text-foreground">{cred.displayName}</span>
-                  <Select
-                    value={selectedCredentials[cred.platform] || cred.keys[0]?.id}
-                    onValueChange={(value) => handleCredentialSelect(cred.platform, value)}
-                  >
-                    <SelectTrigger className="h-6 text-xs w-auto min-w-[120px] py-0 text-foreground transition-all duration-200 hover:bg-muted">
-                      <SelectValue placeholder="Select key" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background text-foreground">
-                      {cred.keys.map((key) => (
-                        <SelectItem key={key.id} value={key.id} className="text-xs py-1 min-h-0 text-foreground">
-                          {key.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openPopovers[`apikey-${cred.platform}`]} onOpenChange={(open) => setOpenPopovers({ ...openPopovers, [`apikey-${cred.platform}`]: open })} modal={true}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openPopovers[`apikey-${cred.platform}`]}
+                        className="h-6 text-xs w-auto min-w-[120px] py-0 text-foreground transition-all duration-200 hover:bg-muted font-normal"
+                      >
+                        {selectedKey?.name || 'Select key'}
+                        <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                      <Command>
+                        <CommandList className="max-h-[300px]">
+                          <CommandGroup>
+                            {cred.keys.map((key) => (
+                              <CommandItem
+                                key={key.id}
+                                value={key.id}
+                                onSelect={() => {
+                                  handleCredentialSelect(cred.platform, key.id);
+                                  setOpenPopovers({ ...openPopovers, [`apikey-${cred.platform}`]: false });
+                                }}
+                                className="text-xs py-1 min-h-0"
+                              >
+                                <Check className={`mr-2 h-3 w-3 ${selectedValue === key.id ? 'opacity-100' : 'opacity-0'}`} />
+                                {key.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button
