@@ -37,8 +37,8 @@ export function CommentsList({ listingId, onCommentChange }: CommentsListProps) 
       const response = await fetch(`/api/rentals/${listingId}/comment`);
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        setComments(data.comments || []);
+      if (response.ok && data.comments) {
+        setComments(data.comments);
       }
     } catch (error) {
       console.error('Failed to fetch comments:', error);
