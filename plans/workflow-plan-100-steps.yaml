@@ -1,0 +1,900 @@
+name: 100-Step Comprehensive Utilities Test
+description: Complete test of 100+ utility modules with single AI call - validates all features
+trigger: manual
+output: json
+category: testing
+tags: [utilities, comprehensive, test]
+timeout: 600000
+steps:
+  # === SETUP: Generate Test Data (Steps 1-5) ===
+
+  - module: utilities.datetime.now
+    id: test-start-time
+    inputs: {}
+    outputAs: startTime
+
+  - module: utilities.javascript.evaluateExpression
+    id: setup-test-data
+    inputs:
+      expression: "({numbers: [1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100], scores: [85, 92, 78, 95, 88, 91, 87, 93, 89, 90], strings: ['hello', 'world', 'test', 'data', 'workflow', 'automation'], objects: [{id: 1, name: 'Alice', score: 85, active: true}, {id: 2, name: 'Bob', score: 92, active: false}, {id: 3, name: 'Charlie', score: 78, active: true}, {id: 4, name: 'Diana', score: 95, active: true}, {id: 5, name: 'Eve', score: 88, active: false}], dates: ['2024-01-15', '2024-06-20', '2024-12-25'], platforms: ['twitter', 'reddit', 'linkedin', 'twitter', 'reddit']})"
+    outputAs: testData
+
+  - module: utilities.javascript.evaluateExpression
+    id: setup-nested-data
+    inputs:
+      expression: "({users: {alice: {age: 30, city: 'NYC'}, bob: {age: 25, city: 'LA'}}, config: {timeout: 5000, retries: 3}, metrics: {views: 1000, clicks: 50, conversions: 10}})"
+    outputAs: nestedData
+
+  - module: utilities.javascript.evaluateExpression
+    id: setup-csv-data
+    inputs:
+      expression: "('name,age,city\\nAlice,30,NYC\\nBob,25,LA\\nCharlie,35,SF\\nDiana,28,Chicago\\nEve,32,Boston')"
+    outputAs: csvString
+
+  - module: utilities.javascript.evaluateExpression
+    id: setup-xml-data
+    inputs:
+      expression: "('<?xml version=\"1.0\"?><root><users><user id=\"1\">Alice</user><user id=\"2\">Bob</user></users></root>')"
+    outputAs: xmlString
+
+  # === MATH OPERATIONS (Steps 6-25) ===
+
+  - module: utilities.math.add
+    id: math-add
+    inputs:
+      a: 100
+      b: 50
+    outputAs: sumResult
+
+  - module: utilities.math.subtract
+    id: math-subtract
+    inputs:
+      a: 100
+      b: 30
+    outputAs: subtractResult
+
+  - module: utilities.math.multiply
+    id: math-multiply
+    inputs:
+      a: 12
+      b: 8
+    outputAs: multiplyResult
+
+  - module: utilities.math.divide
+    id: math-divide
+    inputs:
+      a: 100
+      b: 4
+    outputAs: divideResult
+
+  - module: utilities.math.round
+    id: math-round
+    inputs:
+      value: 3.14159
+      decimals: 2
+    outputAs: roundedValue
+
+  - module: utilities.math.floor
+    id: math-floor
+    inputs:
+      value: 3.99
+    outputAs: floorValue
+
+  - module: utilities.math.ceil
+    id: math-ceil
+    inputs:
+      value: 3.01
+    outputAs: ceilValue
+
+  - module: utilities.math.abs
+    id: math-abs
+    inputs:
+      value: -42
+    outputAs: absValue
+
+  - module: utilities.math.percentage
+    id: math-percentage
+    inputs:
+      value: 25
+      total: 100
+    outputAs: percentValue
+
+  - module: utilities.math.clamp
+    id: math-clamp
+    inputs:
+      value: 150
+      min: 0
+      max: 100
+    outputAs: clampedValue
+
+  - module: utilities.array-utils.max
+    id: math-max
+    inputs:
+      arr: "{{testData.numbers}}"
+    outputAs: maxNumber
+
+  - module: utilities.array-utils.min
+    id: math-min
+    inputs:
+      arr: "{{testData.numbers}}"
+    outputAs: minNumber
+
+  - module: utilities.math.power
+    id: math-power
+    inputs:
+      base: 2
+      exponent: 10
+    outputAs: powerResult
+
+  - module: utilities.math.sqrt
+    id: math-sqrt
+    inputs:
+      value: 144
+    outputAs: sqrtResult
+
+  - module: utilities.math.modulo
+    id: math-modulo
+    inputs:
+      a: 17
+      b: 5
+    outputAs: moduloResult
+
+  - module: utilities.math.isEven
+    id: math-is-even
+    inputs:
+      value: 42
+    outputAs: isEvenResult
+
+  - module: utilities.math.isOdd
+    id: math-is-odd
+    inputs:
+      value: 17
+    outputAs: isOddResult
+
+  - module: utilities.math.degreesToRadians
+    id: math-deg-to-rad
+    inputs:
+      degrees: 180
+    outputAs: radiansValue
+
+  - module: utilities.math.radiansToDegrees
+    id: math-rad-to-deg
+    inputs:
+      radians: "{{radiansValue}}"
+    outputAs: degreesValue
+
+  - module: utilities.math.randomBetween
+    id: math-random
+    inputs:
+      min: 1
+      max: 100
+    outputAs: randomNumber
+
+  # === ARRAY OPERATIONS (Steps 26-55) ===
+
+  - module: utilities.array-utils.first
+    id: array-first
+    inputs:
+      arr: "{{testData.numbers}}"
+      count: 3
+    outputAs: firstThree
+
+  - module: utilities.array-utils.last
+    id: array-last
+    inputs:
+      arr: "{{testData.numbers}}"
+      count: 3
+    outputAs: lastThree
+
+  - module: utilities.array-utils.unique
+    id: array-unique
+    inputs:
+      arr: "{{testData.platforms}}"
+    outputAs: uniquePlatforms
+
+  - module: utilities.array-utils.flatten
+    id: array-flatten
+    inputs:
+      arr: [[1, 2], [3, 4], [5, 6]]
+    outputAs: flatArray
+
+  - module: utilities.array-utils.chunk
+    id: array-chunk
+    inputs:
+      arr: "{{testData.numbers}}"
+      size: 3
+    outputAs: chunkedNumbers
+
+  - module: utilities.array-utils.shuffle
+    id: array-shuffle
+    inputs:
+      arr: "{{testData.strings}}"
+    outputAs: shuffledStrings
+
+  - module: utilities.array-utils.random
+    id: array-random
+    inputs:
+      arr: "{{testData.strings}}"
+    outputAs: randomString
+
+  - module: utilities.array-utils.sample
+    id: array-sample
+    inputs:
+      arr: "{{testData.numbers}}"
+      count: 5
+    outputAs: sampledNumbers
+
+  - module: utilities.array-utils.compact
+    id: array-compact
+    inputs:
+      arr: [0, 1, false, 2, null, 3, 4]
+    outputAs: compactedArray
+
+  - module: utilities.javascript.execute
+    id: array-intersection
+    inputs:
+      code: "return arr1.filter(x => arr2.includes(x))"
+      context:
+        arr1: [1, 2, 3, 4]
+        arr2: [3, 4, 5, 6]
+    outputAs: intersectionResult
+
+  - module: utilities.javascript.execute
+    id: array-union
+    inputs:
+      code: "return [...new Set([...arr1, ...arr2])]"
+      context:
+        arr1: [1, 2, 3]
+        arr2: [3, 4, 5]
+    outputAs: unionResult
+
+  - module: utilities.array-utils.difference
+    id: array-difference
+    inputs:
+      arr1: [1, 2, 3, 4, 5]
+      arr2: [3, 4, 5]
+    outputAs: differenceResult
+
+  - module: utilities.array-utils.sortNumbers
+    id: array-sort-numbers
+    inputs:
+      arr: "{{testData.scores}}"
+      order: desc
+    outputAs: sortedScores
+
+  - module: utilities.array-utils.sortStrings
+    id: array-sort-strings
+    inputs:
+      arr: "{{testData.strings}}"
+      order: asc
+    outputAs: sortedStrings
+
+  - module: utilities.array-utils.sortBy
+    id: array-sort-by
+    inputs:
+      arr: "{{testData.objects}}"
+      key: score
+      order: desc
+    outputAs: sortedObjects
+
+  - module: utilities.array-utils.groupBy
+    id: array-group-by
+    inputs:
+      arr: "{{testData.objects}}"
+      key: active
+    outputAs: groupedByActive
+
+  - module: utilities.array-utils.countBy
+    id: array-count-by
+    inputs:
+      arr: "{{testData.platforms}}"
+    outputAs: platformCounts
+
+  - module: utilities.array-utils.sum
+    id: array-sum
+    inputs:
+      arr: "{{testData.scores}}"
+    outputAs: totalScore
+
+  - module: utilities.array-utils.average
+    id: array-average
+    inputs:
+      arr: "{{testData.scores}}"
+    outputAs: avgScore
+
+  - module: utilities.array-utils.min
+    id: array-min
+    inputs:
+      arr: "{{testData.scores}}"
+    outputAs: minScore
+
+  - module: utilities.array-utils.max
+    id: array-max
+    inputs:
+      arr: "{{testData.scores}}"
+    outputAs: maxScore
+
+  - module: utilities.array-utils.median
+    id: array-median
+    inputs:
+      arr: "{{testData.scores}}"
+    outputAs: medianScore
+
+  - module: utilities.array-utils.pluck
+    id: array-pluck
+    inputs:
+      arr: "{{testData.objects}}"
+      key: name
+    outputAs: names
+
+  - module: utilities.array-utils.filterBy
+    id: array-filter-by
+    inputs:
+      arr: "{{testData.objects}}"
+      key: score
+      value: 90
+    outputAs: highScorers
+
+  - module: utilities.array-utils.findBy
+    id: array-find-by
+    inputs:
+      arr: "{{testData.objects}}"
+      key: name
+      value: Bob
+    outputAs: foundBob
+
+  - module: utilities.array-utils.isEmpty
+    id: array-is-empty
+    inputs:
+      arr: []
+    outputAs: isEmptyResult
+
+  - module: utilities.array-utils.reverse
+    id: array-reverse
+    inputs:
+      arr: "{{testData.numbers}}"
+    outputAs: reversedNumbers
+
+  - module: utilities.javascript.execute
+    id: array-zip
+    inputs:
+      code: "return arr1.map((v, i) => [v, arr2[i]])"
+      context:
+        arr1: [1, 2, 3]
+        arr2: ["a", "b", "c"]
+    outputAs: zippedArrays
+
+  # === STRING OPERATIONS (Steps 56-70) ===
+
+  - module: utilities.string-utils.toSlug
+    id: string-to-slug
+    inputs:
+      text: "Hello World Test 2024"
+    outputAs: slugText
+
+  - module: utilities.string-utils.toCamelCase
+    id: string-camel
+    inputs:
+      str: "hello_world_test"
+    outputAs: camelCase
+
+  - module: utilities.string-utils.toPascalCase
+    id: string-pascal
+    inputs:
+      str: "hello_world_test"
+    outputAs: pascalCase
+
+  - module: utilities.string-utils.toSnakeCase
+    id: string-snake
+    inputs:
+      str: "helloWorldTest"
+    outputAs: snakeCase
+
+  - module: utilities.string-utils.toKebabCase
+    id: string-kebab
+    inputs:
+      str: "helloWorldTest"
+    outputAs: kebabCase
+
+  - module: utilities.string-utils.truncate
+    id: string-truncate
+    inputs:
+      str: "This is a very long string that needs truncation"
+      maxLength: 20
+    outputAs: truncatedString
+
+  - module: utilities.string-utils.truncateWords
+    id: string-truncate-words
+    inputs:
+      str: "This is a long string with many words"
+      maxWords: 5
+    outputAs: truncatedWords
+
+  - module: utilities.string-utils.stripHtml
+    id: string-strip-html
+    inputs:
+      str: "<p>Hello <strong>World</strong></p>"
+    outputAs: strippedHtml
+
+  - module: utilities.string-utils.escapeHtml
+    id: string-escape-html
+    inputs:
+      str: "<script>alert('test')</script>"
+    outputAs: escapedHtml
+
+  - module: utilities.string-utils.capitalize
+    id: string-capitalize
+    inputs:
+      str: "hello world"
+    outputAs: capitalizedString
+
+  - module: utilities.string-utils.capitalizeWords
+    id: string-capitalize-words
+    inputs:
+      str: "hello world test"
+    outputAs: capitalizedWords
+
+  - module: utilities.string-utils.reverse
+    id: string-reverse
+    inputs:
+      str: "Hello World"
+    outputAs: reversedString
+
+  - module: utilities.string-utils.isEmail
+    id: string-is-email
+    inputs:
+      str: "test@example.com"
+    outputAs: isEmailResult
+
+  - module: utilities.string-utils.isUrl
+    id: string-is-url
+    inputs:
+      str: "https://example.com"
+    outputAs: isUrlResult
+
+
+  # === DATETIME OPERATIONS (Steps 71-85) ===
+
+  - module: utilities.datetime.parseDate
+    id: datetime-parse
+    inputs:
+      dateString: "2024-06-15"
+      formatString: "yyyy-MM-dd"
+    outputAs: parsedDate
+
+  - module: utilities.datetime.formatDate
+    id: datetime-format
+    inputs:
+      date: "{{startTime}}"
+      formatString: "yyyy-MM-dd HH:mm:ss"
+    outputAs: formattedDate
+
+  - module: utilities.datetime.addDays
+    id: datetime-add-days
+    inputs:
+      date: "{{startTime}}"
+      days: 7
+    outputAs: futureDate
+
+  - module: utilities.datetime.addHours
+    id: datetime-add-hours
+    inputs:
+      date: "{{startTime}}"
+      hours: 24
+    outputAs: dateWithHours
+
+  - module: utilities.datetime.addMinutes
+    id: datetime-add-minutes
+    inputs:
+      date: "{{startTime}}"
+      minutes: 30
+    outputAs: dateWithMinutes
+
+  - module: utilities.datetime.subDays
+    id: datetime-sub-days
+    inputs:
+      date: "{{startTime}}"
+      days: 3
+    outputAs: pastDate
+
+  - module: utilities.datetime.subHours
+    id: datetime-sub-hours
+    inputs:
+      date: "{{startTime}}"
+      hours: 12
+    outputAs: pastDateHours
+
+  - module: utilities.datetime.subMinutes
+    id: datetime-sub-minutes
+    inputs:
+      date: "{{startTime}}"
+      minutes: 45
+    outputAs: pastDateMinutes
+
+  - module: utilities.datetime.isAfterDate
+    id: datetime-is-after
+    inputs:
+      date: "{{futureDate}}"
+      dateToCompare: "{{startTime}}"
+    outputAs: isAfter
+
+  - module: utilities.datetime.isBeforeDate
+    id: datetime-is-before
+    inputs:
+      date: "{{pastDate}}"
+      dateToCompare: "{{startTime}}"
+    outputAs: isBefore
+
+  - module: utilities.datetime.getDaysDifference
+    id: datetime-days-diff
+    inputs:
+      dateLeft: "{{futureDate}}"
+      dateRight: "{{startTime}}"
+    outputAs: daysDiff
+
+  - module: utilities.datetime.getStartOfDay
+    id: datetime-start-of-day
+    inputs:
+      date: "{{startTime}}"
+    outputAs: startOfDay
+
+  - module: utilities.datetime.getEndOfDay
+    id: datetime-end-of-day
+    inputs:
+      date: "{{startTime}}"
+    outputAs: endOfDay
+
+  - module: utilities.datetime.toISO
+    id: datetime-to-iso
+    inputs:
+      date: "{{startTime}}"
+    outputAs: isoDate
+
+  - module: utilities.datetime.timestamp
+    id: datetime-timestamp
+    inputs: {}
+    outputAs: timestampValue
+
+  # === JSON OPERATIONS (Steps 86-95) ===
+
+  - module: utilities.json-transform.parseJson
+    id: json-parse
+    inputs:
+      jsonString: "{\"test\": \"data\", \"number\": 42}"
+    outputAs: parsedJson
+
+  - module: utilities.json-transform.stringifyJson
+    id: json-stringify
+    inputs:
+      data: "{{testData.objects}}"
+    outputAs: jsonString
+
+  - module: utilities.json-transform.deepClone
+    id: json-deep-clone
+    inputs:
+      obj: "{{testData.objects}}"
+    outputAs: clonedObjects
+
+  - module: utilities.javascript.execute
+    id: json-deep-merge
+    inputs:
+      code: "return Object.assign({}, target, ...sources)"
+      context:
+        target:
+          a: 1
+          b: 2
+        sources:
+          - b: 3
+            c: 4
+    outputAs: mergedObject
+
+  - module: utilities.json-transform.get
+    id: json-get
+    inputs:
+      obj: "{{testData.objects}}"
+      path: "[0].name"
+    outputAs: firstName
+
+  - module: utilities.json-transform.set
+    id: json-set
+    inputs:
+      obj: "{{clonedObjects}}"
+      path: "[0].score"
+      value: 100
+    outputAs: updatedObjects
+
+  - module: utilities.json-transform.pick
+    id: json-pick
+    inputs:
+      obj:
+        a: 1
+        b: 2
+        c: 3
+        d: 4
+      keys: ["a", "c"]
+    outputAs: pickedObject
+
+  - module: utilities.json-transform.omit
+    id: json-omit
+    inputs:
+      obj:
+        a: 1
+        b: 2
+        c: 3
+        d: 4
+      keys: ["b", "d"]
+    outputAs: omittedObject
+
+  - module: utilities.json-transform.flatten
+    id: json-flatten
+    inputs:
+      obj:
+        a:
+          b:
+            c: 1
+    outputAs: flattenedObject
+
+  - module: utilities.json-transform.unflatten
+    id: json-unflatten
+    inputs:
+      obj:
+        "a.b.c": 1
+    outputAs: unflattenedObject
+
+  # === CSV OPERATIONS (Steps 96-100) ===
+
+  - module: utilities.csv.parseCsv
+    id: csv-parse
+    inputs:
+      csvString: "{{csvString}}"
+    outputAs: csvData
+
+  - module: utilities.csv.stringifyCsv
+    id: csv-stringify
+    inputs:
+      data: "{{testData.objects}}"
+    outputAs: csvOutput
+
+  - module: utilities.csv.csvToJson
+    id: csv-to-json
+    inputs:
+      csvString: "{{csvString}}"
+    outputAs: csvJsonData
+
+  - module: utilities.csv.jsonToCsv
+    id: json-to-csv
+    inputs:
+      jsonString: "{{jsonString}}"
+    outputAs: convertedCsv
+
+  # === VALIDATION (Steps 101-103) ===
+
+  - module: utilities.validation.validateRequired
+    id: validate-required
+    inputs:
+      data:
+        name: "{{firstName}}"
+        score: "{{avgScore}}"
+      fields: [name, score]
+    outputAs: requiredValidation
+
+  - module: utilities.validation.validateTypes
+    id: validate-types
+    inputs:
+      data:
+        maxNumber: "{{maxNumber}}"
+        names: "{{names}}"
+      typeMap:
+        maxNumber: number
+        names: array
+    outputAs: typeValidation
+
+  - module: utilities.validation.validateEmail
+    id: validate-email
+    inputs:
+      email: "test@example.com"
+    outputAs: emailValidation
+
+  # === AGGREGATION (Steps 104-108) ===
+
+  - module: utilities.aggregation.median
+    id: agg-median
+    inputs:
+      numbers: "{{testData.scores}}"
+    outputAs: medianValue
+
+  - module: utilities.aggregation.variance
+    id: agg-variance
+    inputs:
+      numbers: "{{testData.scores}}"
+    outputAs: varianceValue
+
+  - module: utilities.aggregation.stdDeviation
+    id: agg-std-dev
+    inputs:
+      numbers: "{{testData.scores}}"
+    outputAs: stdDevValue
+
+  - module: utilities.aggregation.mode
+    id: agg-mode
+    inputs:
+      items: [1, 2, 2, 3, 3, 3, 4]
+    outputAs: modeValue
+
+  - module: utilities.aggregation.percentile
+    id: agg-percentile
+    inputs:
+      numbers: "{{testData.scores}}"
+      percent: 75
+    outputAs: p75Value
+
+  # === FILTERING (Steps 109-112) ===
+
+  - module: utilities.filtering.filterArrayByCondition
+    id: filter-by-condition
+    inputs:
+      items: "{{testData.objects}}"
+      field: score
+      operator: ">"
+      value: 85
+    outputAs: filteredObjects
+
+  - module: utilities.filtering.findItemByCondition
+    id: find-by-condition
+    inputs:
+      items: "{{testData.objects}}"
+      field: name
+      operator: "==="
+      value: Alice
+    outputAs: foundItem
+
+  - module: utilities.filtering.containsAll
+    id: filter-contains-all
+    inputs:
+      array: "{{testData.numbers}}"
+      searchValues: [1, 2, 3]
+    outputAs: containsAllResult
+
+  - module: utilities.filtering.containsAny
+    id: filter-contains-any
+    inputs:
+      array: "{{testData.numbers}}"
+      searchValues: [99, 100, 1]
+    outputAs: containsAnyResult
+
+  # === BATCHING (Steps 113-115) ===
+
+  - module: utilities.batching.chunkArray
+    id: batch-chunk
+    inputs:
+      array: "{{testData.objects}}"
+      size: 2
+    outputAs: objectBatches
+
+  - module: utilities.batching.createBatches
+    id: batch-create
+    inputs:
+      items: "{{testData.strings}}"
+      batchSize: 3
+    outputAs: stringBatches
+
+  - module: utilities.array-utils.first
+    id: batch-get-first
+    inputs:
+      arr: "{{stringBatches}}"
+    outputAs: firstBatch
+
+  # === CONTROL FLOW (Steps 116-118) ===
+
+  - module: utilities.control-flow.conditional
+    id: control-if
+    inputs:
+      condition: "{{avgScore}} > 85"
+      trueVal: "High performance"
+      falseVal: "Normal performance"
+    outputAs: performanceLevel
+
+  - module: utilities.control-flow.switchCase
+    id: control-switch
+    inputs:
+      value: "{{performanceLevel}}"
+      cases:
+        "High performance": "Excellent"
+        "Normal performance": "Good"
+      defaultCase: "Unknown"
+    outputAs: performanceRating
+
+  - module: utilities.javascript.execute
+    id: control-coalesce
+    inputs:
+      code: "return values.find(v => v != null) || 'Default'"
+      context:
+        values: [null, null, "{{firstName}}", "Default"]
+    outputAs: coalescedValue
+
+  # === AI GENERATION (Step 119) ===
+
+  - module: ai.ai-sdk.generateText
+    id: ai-summary
+    inputs:
+      prompt: "Summarize these test results: Max score {{maxScore}}, Average {{avgScore}}, Median {{medianValue}}, Total tests {{testData.objects.length}}"
+      model: gpt-4o-mini
+      provider: openai
+      apiKey: "{{credential.openai_api_key}}"
+      temperature: 0.3
+      maxTokens: 100
+    outputAs: aiSummary
+
+  - module: utilities.json-transform.get
+    id: extract-ai-content
+    inputs:
+      obj: "{{aiSummary}}"
+      path: content
+    outputAs: summaryText
+
+  # === FINAL RESULTS (Steps 121-122) ===
+
+  - module: utilities.datetime.now
+    id: test-end-time
+    inputs: {}
+    outputAs: endTime
+
+  - module: utilities.javascript.execute
+    id: build-final-report
+    inputs:
+      code: |
+        return {
+          testInfo: {
+            startTime: start,
+            endTime: end,
+            totalSteps: 122
+          },
+          mathResults: {
+            sum: sum,
+            max: max,
+            min: min,
+            power: power,
+            sqrt: sqrt
+          },
+          arrayResults: {
+            sorted: sorted.slice(0, 3),
+            grouped: Object.keys(grouped).length,
+            unique: unique.length,
+            average: avg,
+            median: median
+          },
+          stringResults: {
+            slug: slug,
+            camel: camel,
+            pascal: pascal,
+            truncated: truncated
+          },
+          validation: {
+            required: reqValid.valid,
+            types: typeValid.valid,
+            email: emailValid
+          },
+          aiAnalysis: summary
+        }
+      context:
+        start: "{{startTime}}"
+        end: "{{endTime}}"
+        sum: "{{sumResult}}"
+        max: "{{maxNumber}}"
+        min: "{{minNumber}}"
+        power: "{{powerResult}}"
+        sqrt: "{{sqrtResult}}"
+        sorted: "{{sortedScores}}"
+        grouped: "{{groupedByActive}}"
+        unique: "{{uniquePlatforms}}"
+        avg: "{{avgScore}}"
+        median: "{{medianValue}}"
+        slug: "{{slugText}}"
+        camel: "{{camelCase}}"
+        pascal: "{{pascalCase}}"
+        truncated: "{{truncatedString}}"
+        reqValid: "{{requiredValidation}}"
+        typeValid: "{{typeValidation}}"
+        emailValid: "{{emailValidation}}"
+        summary: "{{summaryText}}"
+    outputAs: finalReport

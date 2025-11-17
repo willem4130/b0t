@@ -1,0 +1,157 @@
+name: Aruba Housing Scraper - Fixed Dashboard
+description: Scrapes real HTML with error handling - FIXED variable bug preventing listings from showing
+trigger: manual
+output: table
+outputColumns: [site_name, title, price, bedrooms, url, image_url, description, scraped_at]
+category: real-estate
+tags: [scraping, rental-properties, aruba, real-estate, detailed-listings]
+
+steps:
+  # Step 1: Load site configurations
+  - module: utilities.javascript.evaluateExpression
+    id: load-configs
+    name: Load Site Configs
+    inputs:
+      expression: |
+        ({
+          sites: [
+            {
+              name: "Aruba Listings",
+              url: "https://arubalistings.com/rent",
+              domain: "arubalistings.com",
+              selectors: {
+                listing: ".listing-container",
+                title: ".listing-type",
+                price: ".price",
+                bedrooms: ".listing-amenety",
+                link: "a.link-cover",
+                image: "img.core-image"
+              }
+            }
+          ]
+        })
+    outputAs: config
+
+  # Step 2: Fetch HTML from first site using browser (JavaScript rendering)
+  - module: utilities.browser.fetchRenderedHtml
+    id: scrape-site-1
+    name: Fetch Rendered HTML with Browser
+    inputs:
+      url: "{{config.sites[0].url}}"
+    outputAs: html1
+
+  # Step 3: Extract listings with error handling
+  - module: utilities.javascript.execute
+    id: scrape-all-sites
+    name: Extract Listings with Error Handling
+    inputs:
+      code: |
+        const cheerio = require('cheerio');
+        const allListings = [];
+
+        // Helper functions
+        const extractPrice = (text) => {
+          if (!text) return null;
+          const cleaned = text.replace(/[^0-9]/g, '');
+          return cleaned ? parseInt(cleaned) : null;
+        };
+
+        const extractBedrooms = (text) => {
+          if (!text) return null;
+          const match = text.match(/(\d+)\s*(?:bed|br|bedroom)/i);
+          return match ? parseInt(match[1]) : null;
+        };
+
+        const extractUrl = (element, baseUrl) => {
+          const href = element.attr('href');
+          if (!href) return null;
+          if (href.startsWith('http')) return href;
+          try {
+            return new URL(href, baseUrl).href;
+          } catch {
+            return href;
+          }
+        };
+
+        const extractImageUrl = (element, baseUrl) => {
+          // Aruba Listings uses data-src for lazy loading
+          const src = element.attr('data-src') || element.attr('src');
+          if (!src) return null;
+          if (src.startsWith('http')) return src;
+          try {
+            return new URL(src, baseUrl).href;
+          } catch {
+            return src;
+          }
+        };
+
+        // Process site - FIX: properly load cheerio with the HTML
+        const site = config.sites[0];
+        const $ = cheerio.load(html1);
+
+        try {
+          const listingElements = $(site.selectors.listing);
+
+          listingElements.each((index, element) => {
+            try {
+              const $el = $(element);
+
+              // Extract title
+              const titleEl = $el.find(site.selectors.title).first();
+              const title = titleEl.text().trim();
+
+              if (!title) return; // Skip if no title
+
+              // Extract price
+              const priceEl = $el.find(site.selectors.price).first();
+              const priceText = priceEl.text().trim();
+              const price = extractPrice(priceText);
+
+              // Extract bedrooms (from listing-amenety spans)
+              const bedroomsEl = $el.find(site.selectors.bedrooms).first();
+              const bedroomsText = bedroomsEl.text().trim();
+              const bedrooms = extractBedrooms(bedroomsText);
+
+              // Extract area/location as description
+              const descEl = $el.find('.listing-area, .listing-sub-type').first();
+              const description = descEl.text().trim().substring(0, 200) || title;
+
+              // Extract image
+              const imageEl = $el.find(site.selectors.image).first();
+              const imageUrl = extractImageUrl(imageEl, site.url);
+
+              // Extract listing URL
+              const linkEl = $el.find(site.selectors.link).first();
+              let listingUrl = extractUrl(linkEl, site.url);
+
+              // Ensure URL is absolute
+              if (listingUrl && !listingUrl.startsWith('http')) {
+                listingUrl = new URL(listingUrl, site.url).href;
+              }
+
+              allListings.push({
+                site_name: site.name,
+                title: title,
+                price: price,
+                bedrooms: bedrooms,
+                url: listingUrl || site.url,
+                image_url: imageUrl,
+                description: description,
+                scraped_at: new Date().toISOString()
+              });
+            } catch (error) {
+              // Skip individual listing errors
+              console.log(`Error parsing listing: ${error.message}`);
+            }
+          });
+        } catch (error) {
+          console.log(`Error processing site ${site.name}: ${error.message}`);
+        }
+
+        return allListings;
+      context:
+        html1: "{{html1}}"
+        config: "{{config}}"
+    outputAs: allListings
+
+returnValue: "{{allListings}}"

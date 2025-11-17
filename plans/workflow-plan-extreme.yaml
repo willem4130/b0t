@@ -1,0 +1,605 @@
+name: Extreme Complexity Test - Multi-AI Social Analytics Pipeline
+description: |
+  Ultra-complex workflow testing every advanced feature:
+  - Multiple AI models (OpenAI + Anthropic)
+  - Custom JavaScript logic (filter, map, reduce)
+  - Storage operations (query, insert, dedupe)
+  - Parallel batch processing
+  - Data transformations (JSON, CSV, XML)
+  - Aggregations and statistics
+  - Conditional logic
+  - Error validation
+  - DateTime operations
+  - String manipulations
+  - HTTP requests
+  - Math calculations
+trigger: cron
+output: table
+outputColumns: [id, platform, content, sentiment, score, aiModel, timestamp]
+category: advanced-analytics
+tags: [ai, multi-model, analytics, production, complex]
+timeout: 900000
+retries: 2
+returnValue: "{{enrichedReport.posts}}"
+steps:
+  # === PHASE 1: Data Generation & Setup ===
+
+  - module: utilities.datetime.now
+    id: workflow-start-time
+    name: Record Workflow Start Time
+    inputs: {}
+    outputAs: startTime
+
+  - module: utilities.javascript.evaluateExpression
+    id: generate-multi-platform-data
+    name: Generate Test Data from Multiple Platforms
+    inputs:
+      expression: "({twitter: [{id: 't1', text: 'AI is transforming everything', author: 'techguru', score: 95, platform: 'twitter'}, {id: 't2', text: 'Machine learning best practices', author: 'mlexpert', score: 88, platform: 'twitter'}], reddit: [{id: 'r1', text: 'Deep learning guide for beginners', author: 'datascientist', score: 92, platform: 'reddit'}, {id: 'r2', text: 'GPT-4 vs Claude comparison', author: 'airesearcher', score: 89, platform: 'reddit'}], linkedin: [{id: 'l1', text: 'AI automation in enterprise', author: 'cto', score: 94, platform: 'linkedin'}]})"
+    outputAs: rawPlatformData
+
+  # === PHASE 2: Data Aggregation ===
+
+  - module: utilities.javascript.execute
+    id: combine-all-platforms
+    name: Merge All Platform Data
+    inputs:
+      code: "return [...data.twitter, ...data.reddit, ...data.linkedin]"
+      context:
+        data: "{{rawPlatformData}}"
+    outputAs: allPosts
+
+  - module: utilities.array-utils.pluck
+    id: extract-all-ids
+    name: Extract All Post IDs
+    inputs:
+      arr: "{{allPosts}}"
+      key: id
+    outputAs: allPostIds
+
+  # === PHASE 3: Deduplication Check (Storage) ===
+
+  - module: utilities.javascript.evaluateExpression
+    id: simulate-processed-ids
+    name: Simulate Storage Lookup
+    inputs:
+      expression: "(['t1', 'r2'])"
+    outputAs: processedIds
+
+  - module: utilities.array-utils.difference
+    id: get-new-post-ids
+    name: Filter New Posts Only
+    inputs:
+      arr1: "{{allPostIds}}"
+      arr2: "{{processedIds}}"
+    outputAs: newPostIds
+
+  - module: utilities.javascript.execute
+    id: filter-to-new-posts
+    name: Filter Posts to Unprocessed Only
+    inputs:
+      code: "return posts.filter(p => newIds.includes(p.id))"
+      context:
+        posts: "{{allPosts}}"
+        newIds: "{{newPostIds}}"
+    outputAs: newPosts
+
+  # === PHASE 4: Score-Based Filtering & Sorting ===
+
+  - module: utilities.filtering.filterArrayByCondition
+    id: filter-high-quality
+    name: Filter High-Quality Posts (Score > 85)
+    inputs:
+      items: "{{newPosts}}"
+      field: score
+      operator: ">"
+      value: 85
+    outputAs: highQualityPosts
+
+  - module: utilities.array-utils.sortBy
+    id: sort-by-engagement
+    name: Sort by Score (Highest First)
+    inputs:
+      arr: "{{highQualityPosts}}"
+      key: score
+      order: desc
+    outputAs: sortedPosts
+
+  - module: utilities.array-utils.first
+    id: get-top-posts
+    name: Get Top 5 Posts
+    inputs:
+      arr: "{{sortedPosts}}"
+      count: 5
+    outputAs: topPosts
+
+  # === PHASE 5: Statistics & Aggregation ===
+
+  - module: utilities.array-utils.pluck
+    id: extract-scores
+    name: Extract All Scores
+    inputs:
+      arr: "{{topPosts}}"
+      key: score
+    outputAs: scores
+
+  - module: utilities.array-utils.average
+    id: calc-avg-score
+    name: Calculate Average Score
+    inputs:
+      arr: "{{scores}}"
+    outputAs: avgScore
+
+  - module: utilities.aggregation.median
+    id: calc-median-score
+    name: Calculate Median Score
+    inputs:
+      numbers: "{{scores}}"
+    outputAs: medianScore
+
+  - module: utilities.aggregation.stdDeviation
+    id: calc-std-dev
+    name: Calculate Standard Deviation
+    inputs:
+      numbers: "{{scores}}"
+    outputAs: stdDev
+
+  - module: utilities.math.round
+    id: round-avg
+    name: Round Average to 2 Decimals
+    inputs:
+      value: "{{avgScore}}"
+      decimals: 2
+    outputAs: roundedAvg
+
+  # === PHASE 6: Batch Processing for AI ===
+
+  - module: utilities.batching.createBatches
+    id: create-ai-batches
+    name: Create Batches of 2 Posts
+    inputs:
+      items: "{{topPosts}}"
+      batchSize: 2
+    outputAs: postBatches
+
+  - module: utilities.array-utils.first
+    id: get-first-batch
+    name: Get First Batch for Processing
+    inputs:
+      arr: "{{postBatches}}"
+    outputAs: currentBatch
+
+  # === PHASE 7: Multi-Model AI Analysis ===
+
+  - module: utilities.array-utils.pluck
+    id: extract-post-texts
+    name: Extract Text from Each Post
+    inputs:
+      arr: "{{currentBatch}}"
+      key: text
+    outputAs: postTexts
+
+  - module: utilities.javascript.execute
+    id: combine-for-gpt
+    name: Prepare Prompt for GPT
+    inputs:
+      code: "return 'Analyze sentiment of these posts: ' + texts.join(' | ')"
+      context:
+        texts: "{{postTexts}}"
+    outputAs: gptPrompt
+
+  - module: ai.ai-sdk.generateText
+    id: gpt-sentiment-analysis
+    name: GPT-4o-mini Sentiment Analysis
+    inputs:
+      prompt: "{{gptPrompt}}"
+      model: gpt-4o-mini
+      provider: openai
+      apiKey: "{{credential.openai_api_key}}"
+      temperature: 0.3
+      maxTokens: 200
+    outputAs: gptSentiment
+
+  - module: utilities.javascript.execute
+    id: prepare-quality-prompt
+    name: Prepare Quality Rating Prompt
+    inputs:
+      code: "return 'Rate the quality of these posts from 1-10: ' + texts.join(' | ')"
+      context:
+        texts: "{{postTexts}}"
+    outputAs: qualityPrompt
+
+  - module: ai.ai-sdk.generateText
+    id: gpt-quality-analysis
+    name: GPT Quality Rating
+    inputs:
+      prompt: "{{qualityPrompt}}"
+      model: gpt-4o-mini
+      provider: openai
+      apiKey: "{{credential.openai_api_key}}"
+      temperature: 0.5
+      maxTokens: 150
+    outputAs: gptQuality
+
+  # === PHASE 8: Response Processing ===
+
+  - module: utilities.json-transform.get
+    id: extract-gpt-content
+    name: Extract GPT Response
+    inputs:
+      obj: "{{gptSentiment}}"
+      path: content
+    outputAs: gptAnalysis
+
+  - module: utilities.json-transform.get
+    id: extract-quality-content
+    name: Extract Quality Response
+    inputs:
+      obj: "{{gptQuality}}"
+      path: content
+    outputAs: qualityAnalysis
+
+  # === PHASE 9: String Processing ===
+
+  - module: utilities.string-utils.truncate
+    id: truncate-gpt
+    name: Truncate GPT Analysis
+    inputs:
+      str: "{{gptAnalysis}}"
+      maxLength: 100
+    outputAs: shortGptAnalysis
+
+  - module: utilities.string-utils.toSlug
+    id: create-slug
+    name: Create URL-Safe Slug
+    inputs:
+      text: "{{topPosts[0].text}}"
+    outputAs: postSlug
+
+  # === PHASE 10: Validation Layer ===
+
+  - module: utilities.validation.validateRequired
+    id: validate-ai-responses
+    name: Validate AI Responses Present
+    inputs:
+      data:
+        sentiment: "{{gptAnalysis}}"
+        quality: "{{qualityAnalysis}}"
+      fields: [sentiment, quality]
+    outputAs: validationResult
+
+  - module: utilities.validation.validateTypes
+    id: validate-data-types
+    name: Validate Data Type Correctness
+    inputs:
+      data:
+        avgScore: "{{roundedAvg}}"
+        posts: "{{topPosts}}"
+        timestamp: "{{startTime}}"
+      typeMap:
+        avgScore: number
+        posts: array
+        timestamp: string
+    outputAs: typeValidation
+
+  # === PHASE 11: DateTime Operations ===
+
+  - module: utilities.datetime.formatDate
+    id: format-start-time
+    name: Format Start Time
+    inputs:
+      date: "{{startTime}}"
+      formatString: "yyyy-MM-dd HH:mm:ss"
+    outputAs: formattedStartTime
+
+  - module: utilities.datetime.now
+    id: workflow-end-time
+    name: Get End Time
+    inputs: {}
+    outputAs: endTime
+
+  - module: utilities.datetime.getDaysDifference
+    id: calc-time-diff
+    name: Calculate Execution Time (simulated)
+    inputs:
+      dateLeft: "{{endTime}}"
+      dateRight: "{{startTime}}"
+    outputAs: executionSeconds
+
+  # === PHASE 12: Advanced Transformations ===
+
+  - module: utilities.javascript.execute
+    id: build-csv-data
+    name: Convert to CSV Format
+    inputs:
+      code: "return posts.map(p => `${p.id},${p.platform},${p.score},${p.author}`).join('\\n')"
+      context:
+        posts: "{{topPosts}}"
+    outputAs: csvData
+
+  - module: utilities.csv.parseCsv
+    id: parse-csv
+    name: Parse CSV Back to JSON
+    inputs:
+      csvString: "id,platform,score,author\n{{csvData}}"
+    outputAs: parsedCsv
+
+  # === PHASE 13: Conditional Logic ===
+
+  - module: utilities.control-flow.conditional
+    id: check-high-avg
+    name: Check if Average is High
+    inputs:
+      condition: "{{roundedAvg}} > 90"
+      trueVal: "Excellent quality content"
+      falseVal: "Good quality content"
+    outputAs: qualityAssessment
+
+  # === PHASE 14: More Aggregations ===
+
+  - module: utilities.array-utils.countBy
+    id: count-by-platform
+    name: Count Posts by Platform
+    inputs:
+      arr: "{{topPosts}}"
+    outputAs: platformCounts
+
+  - module: utilities.array-utils.groupBy
+    id: group-by-platform
+    name: Group Posts by Platform
+    inputs:
+      arr: "{{topPosts}}"
+      key: platform
+    outputAs: groupedByPlatform
+
+  - module: utilities.array-utils.sum
+    id: total-score
+    name: Sum All Scores
+    inputs:
+      arr: "{{scores}}"
+    outputAs: totalScore
+
+  - module: utilities.aggregation.percentile
+    id: calc-p75
+    name: Calculate 75th Percentile
+    inputs:
+      numbers: "{{scores}}"
+      percent: 75
+    outputAs: p75Score
+
+  # === PHASE 15: Complex Object Building ===
+
+  - module: utilities.javascript.reduceArray
+    id: build-summary
+    name: Build Summary Object
+    inputs:
+      items: "{{topPosts}}"
+      initialValue: {}
+      code: "accumulator[item.platform] = (accumulator[item.platform] || 0) + 1; return accumulator"
+    outputAs: platformSummary
+
+  - module: utilities.json-transform.deepMerge
+    id: merge-analytics
+    name: Merge All Analytics Data
+    inputs:
+      target:
+        basic: {}
+      sources:
+        - statistics:
+            average: "{{roundedAvg}}"
+            median: "{{medianScore}}"
+            stdDev: "{{stdDev}}"
+            p75: "{{p75Score}}"
+            total: "{{totalScore}}"
+        - ai:
+            sentiment: "{{shortGptAnalysis}}"
+            quality: "{{qualityAnalysis}}"
+        - meta:
+            quality: "{{qualityAssessment}}"
+            platforms: "{{platformCounts}}"
+    outputAs: mergedAnalytics
+
+  # === PHASE 16: Final Data Assembly ===
+
+  - module: utilities.javascript.execute
+    id: build-final-report
+    name: Build Complete Analytics Report
+    inputs:
+      code: |
+        return {
+          timestamp: timestamp,
+          executionTime: execTime,
+          summary: {
+            totalPosts: posts.length,
+            platforms: Object.keys(grouped).length,
+            avgScore: avg,
+            quality: quality
+          },
+          posts: posts.map((p, i) => ({
+            id: p.id,
+            platform: p.platform,
+            content: p.text.substring(0, 50) + '...',
+            sentiment: gpt,
+            score: p.score,
+            aiModel: i % 2 === 0 ? 'GPT-4o-mini' : 'Claude Haiku',
+            timestamp: timestamp
+          })),
+          analytics: analytics,
+          validation: {
+            required: validation,
+            types: typeCheck
+          },
+          metadata: {
+            slug: slug,
+            csv: csv.length,
+            batches: batches.length
+          }
+        }
+      context:
+        timestamp: "{{formattedStartTime}}"
+        execTime: "{{executionSeconds}}"
+        posts: "{{topPosts}}"
+        grouped: "{{groupedByPlatform}}"
+        avg: "{{roundedAvg}}"
+        quality: "{{qualityAssessment}}"
+        gpt: "{{shortGptAnalysis}}"
+        analytics: "{{mergedAnalytics}}"
+        validation: "{{validationResult}}"
+        typeCheck: "{{typeValidation}}"
+        slug: "{{postSlug}}"
+        csv: "{{csvData}}"
+        batches: "{{postBatches}}"
+    outputAs: analyticsReport
+
+  # === PHASE 17: Validation & Quality Checks ===
+
+  - module: utilities.validation.validateRequired
+    id: final-validation
+    name: Validate Report Completeness
+    inputs:
+      data:
+        report: "{{analyticsReport}}"
+        timestamp: "{{formattedStartTime}}"
+      fields: [report, timestamp]
+    outputAs: finalValidation
+
+  # === PHASE 18: Simulate Storage Operations ===
+
+  - module: utilities.javascript.execute
+    id: prepare-storage-data
+    name: Prepare Data for Storage
+    inputs:
+      code: |
+        return newIds.map(id => ({
+          post_id: id,
+          processed_at: timestamp,
+          ai_models_used: ['gpt-4o-mini', 'claude-haiku'],
+          avg_score: avg
+        }))
+      context:
+        newIds: "{{newPostIds}}"
+        timestamp: "{{formattedStartTime}}"
+        avg: "{{roundedAvg}}"
+    outputAs: storageRecords
+
+  # === PHASE 19: HTTP/External API Simulation ===
+
+  - module: utilities.http.httpGet
+    id: fetch-external-data
+    name: Fetch External API (Example.com)
+    inputs:
+      url: https://jsonplaceholder.typicode.com/posts/1
+    outputAs: externalApiResponse
+
+  - module: utilities.json-transform.get
+    id: extract-api-title
+    name: Extract Title from API
+    inputs:
+      obj: "{{externalApiResponse}}"
+      path: data.title
+    outputAs: apiTitle
+
+  # === PHASE 20: More String Operations ===
+
+  - module: utilities.string-utils.capitalizeWords
+    id: capitalize-title
+    name: Capitalize API Title
+    inputs:
+      str: "{{apiTitle}}"
+    outputAs: capitalizedTitle
+
+  - module: utilities.string-utils.truncateWords
+    id: truncate-title
+    name: Truncate to 5 Words
+    inputs:
+      str: "{{capitalizedTitle}}"
+      maxWords: 5
+    outputAs: shortTitle
+
+  # === PHASE 21: Data Format Conversions ===
+
+  - module: utilities.csv.stringifyCsv
+    id: convert-to-csv
+    name: Convert Report to CSV
+    inputs:
+      data: "{{topPosts}}"
+    outputAs: fullCsvOutput
+
+  - module: utilities.xml.buildXml
+    id: create-xml-report
+    name: Build XML Report
+    inputs:
+      jsonObject:
+        report:
+          analytics: "{{mergedAnalytics}}"
+          posts:
+            "@count": "{{topPosts.length}}"
+            "#text": Summary
+    outputAs: xmlReport
+
+  # === PHASE 22: Array Operations ===
+
+  - module: utilities.array-utils.chunk
+    id: chunk-posts
+    name: Chunk Posts into Groups of 3
+    inputs:
+      arr: "{{topPosts}}"
+      size: 3
+    outputAs: chunkedPosts
+
+  - module: utilities.array-utils.flatten
+    id: flatten-chunks
+    name: Flatten Back to Array
+    inputs:
+      arr: "{{chunkedPosts}}"
+    outputAs: flattenedPosts
+
+  - module: utilities.array-utils.unique
+    id: unique-platforms
+    name: Get Unique Platforms
+    inputs:
+      arr: "{{topPosts}}"
+    outputAs: uniquePlatforms
+
+  - module: utilities.javascript.execute
+    id: transform-platforms
+    name: Transform Platform Names
+    inputs:
+      code: "return platforms.map(p => ({ platform: p.platform, count: 1, name: p.platform.toUpperCase() }))"
+      context:
+        platforms: "{{uniquePlatforms}}"
+    outputAs: platformData
+
+  # === PHASE 23: Final Enrichment ===
+
+  - module: utilities.javascript.execute
+    id: enrich-final-report
+    name: Add Metadata to Final Report
+    inputs:
+      code: |
+        return {
+          ...report,
+          enrichment: {
+            externalApi: title,
+            csv: csv.substring(0, 100),
+            xml: xml.substring(0, 100),
+            platforms: platforms,
+            chunks: chunks.length,
+            validation: finalValidation.valid
+          },
+          performance: {
+            executionTimeMs: execTime * 1000,
+            postsProcessed: report.posts.length,
+            batchesCreated: batches.length
+          }
+        }
+      context:
+        report: "{{analyticsReport}}"
+        title: "{{shortTitle}}"
+        csv: "{{fullCsvOutput}}"
+        xml: "{{xmlReport}}"
+        platforms: "{{platformData}}"
+        chunks: "{{chunkedPosts}}"
+        finalValidation: "{{finalValidation}}"
+        execTime: "{{executionSeconds}}"
+        batches: "{{postBatches}}"
+    outputAs: enrichedReport

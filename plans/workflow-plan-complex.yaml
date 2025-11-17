@@ -1,0 +1,219 @@
+name: Advanced Social Media AI Bot with Deduplication
+description: Complex workflow with AI generation, storage, filtering, batch processing, and error recovery
+trigger: cron
+output: table
+outputColumns: [id, text, author, reply, timestamp]
+category: social-automation
+tags: [twitter, ai, automation, production]
+timeout: 600000
+steps:
+  # Step 1: Generate test data (simulating API response)
+  - module: utilities.javascript.evaluateExpression
+    id: mock-tweets
+    name: Generate Mock Tweet Data
+    inputs:
+      expression: "([{id: '1001', text: 'AI is amazing!', author: 'user1', score: 95}, {id: '1002', text: 'Machine learning tips', author: 'user2', score: 87}, {id: '1003', text: 'Deep learning tutorial', author: 'user3', score: 92}, {id: '1004', text: 'AI automation guide', author: 'user4', score: 88}, {id: '1005', text: 'GPT-4 review', author: 'user5', score: 91}])"
+    outputAs: tweets
+
+  # Step 2: Extract tweet IDs for deduplication check
+  - module: utilities.array-utils.pluck
+    id: extract-tweet-ids
+    name: Extract All Tweet IDs
+    inputs:
+      arr: "{{tweets}}"
+      key: id
+    outputAs: allTweetIds
+
+  # Step 3: Check which tweets we've already replied to (storage query)
+  - module: utilities.javascript.evaluateExpression
+    id: simulate-replied-check
+    name: Simulate Storage Check
+    inputs:
+      expression: "(['1001', '1003'])"
+    outputAs: repliedTweetIds
+
+  # Step 4: Filter out already-replied tweets
+  - module: utilities.array-utils.difference
+    id: filter-new-tweets
+    name: Get Only New Tweet IDs
+    inputs:
+      arr1: "{{allTweetIds}}"
+      arr2: "{{repliedTweetIds}}"
+    outputAs: newTweetIds
+
+  # Step 5: Filter original tweets to only new ones
+  - module: utilities.filtering.filterArrayByCondition
+    id: get-new-tweets
+    name: Filter Tweets by ID
+    inputs:
+      items: "{{tweets}}"
+      field: score
+      operator: ">"
+      value: 85
+    outputAs: highScoreTweets
+
+  # Step 6: Sort by score (highest first)
+  - module: utilities.array-utils.sortBy
+    id: sort-by-score
+    name: Sort Tweets by Score
+    inputs:
+      arr: "{{highScoreTweets}}"
+      key: score
+      order: desc
+    outputAs: sortedTweets
+
+  # Step 7: Take top 3 tweets
+  - module: utilities.array-utils.first
+    id: limit-tweets
+    name: Get Top 3 Tweets
+    inputs:
+      arr: "{{sortedTweets}}"
+      count: 3
+    outputAs: topTweets
+
+  # Step 8: Create batches for parallel processing
+  - module: utilities.batching.createBatches
+    id: create-batches
+    name: Batch Tweets for Processing
+    inputs:
+      items: "{{topTweets}}"
+      batchSize: 2
+    outputAs: tweetBatches
+
+  # Step 9: Get first batch
+  - module: utilities.array-utils.first
+    id: get-first-batch
+    name: Get First Batch
+    inputs:
+      arr: "{{tweetBatches}}"
+    outputAs: currentBatch
+
+  # Step 10: Extract text from batch for AI prompt
+  - module: utilities.array-utils.pluck
+    id: extract-tweet-texts
+    name: Extract Tweet Texts
+    inputs:
+      arr: "{{currentBatch}}"
+      key: text
+    outputAs: tweetTexts
+
+  # Step 11: Combine texts into single string
+  - module: utilities.javascript.evaluateExpression
+    id: combine-texts
+    name: Combine Tweet Texts
+    inputs:
+      expression: "(texts.join(' | '))"
+      context:
+        texts: "{{tweetTexts}}"
+    outputAs: combinedText
+
+  # Step 12: Generate AI replies for tweets
+  - module: ai.ai-sdk.generateText
+    id: generate-reply
+    name: Generate AI Reply
+    inputs:
+      prompt: "Generate a helpful, engaging reply to these tweets: {{combinedText}}"
+      model: gpt-4o-mini
+      provider: openai
+      apiKey: "{{credential.openai_api_key}}"
+      temperature: 0.7
+      maxTokens: 150
+    outputAs: aiReply
+
+  # Step 13: Extract generated content
+  - module: utilities.json-transform.get
+    id: extract-reply-text
+    name: Extract Reply Content
+    inputs:
+      obj: "{{aiReply}}"
+      path: content
+    outputAs: replyText
+
+  # Step 14: Validate reply is not empty
+  - module: utilities.validation.validateRequired
+    id: validate-reply
+    name: Validate Reply Generated
+    inputs:
+      data:
+        reply: "{{replyText}}"
+      fields: [reply]
+    outputAs: validationResult
+
+  # Step 15: Get current timestamp
+  - module: utilities.datetime.now
+    id: get-timestamp
+    name: Get Current Timestamp
+    inputs: {}
+    outputAs: timestamp
+
+  # Step 16: Format timestamp
+  - module: utilities.datetime.formatDate
+    id: format-timestamp
+    name: Format Timestamp
+    inputs:
+      date: "{{timestamp}}"
+      formatString: "yyyy-MM-dd HH:mm:ss"
+    outputAs: formattedTimestamp
+
+  # Step 17: Build response object
+  - module: utilities.javascript.evaluateExpression
+    id: build-response
+    name: Build Final Response
+    inputs:
+      expression: "(tweets.map(t => ({ id: t.id, text: t.text, author: t.author, reply: reply, timestamp: timestamp })))"
+      context:
+        tweets: "{{currentBatch}}"
+        reply: "{{replyText}}"
+        timestamp: "{{formattedTimestamp}}"
+    outputAs: responses
+
+  # Step 18: Calculate statistics
+  - module: utilities.aggregation.summarize
+    id: calc-stats
+    name: Calculate Tweet Statistics
+    inputs:
+      items: "{{topTweets}}"
+      field: score
+    outputAs: statistics
+
+  # Step 19: Get average score
+  - module: utilities.array-utils.average
+    id: avg-score
+    name: Calculate Average Score
+    inputs:
+      arr: "{{topTweets}}"
+    outputAs: avgScore
+
+  # Step 20: Round average score
+  - module: utilities.math.round
+    id: round-avg
+    name: Round Average
+    inputs:
+      value: "{{avgScore}}"
+    outputAs: roundedAvg
+
+  # Step 21: Validate final results
+  - module: utilities.validation.validateTypes
+    id: validate-response
+    name: Validate Response Types
+    inputs:
+      data:
+        responses: "{{responses}}"
+        avgScore: "{{roundedAvg}}"
+      typeMap:
+        responses: array
+        avgScore: number
+    outputAs: finalValidation
+
+  # Step 22: Final output with all data
+  - module: utilities.javascript.evaluateExpression
+    id: final-output
+    name: Combine All Results
+    inputs:
+      expression: "({responses: responses, statistics: {average: avg, total: responses.length, timestamp: timestamp}, validation: validation})"
+      context:
+        responses: "{{responses}}"
+        avg: "{{roundedAvg}}"
+        timestamp: "{{formattedTimestamp}}"
+        validation: "{{finalValidation}}"
+    outputAs: finalResult

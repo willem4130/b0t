@@ -1,0 +1,382 @@
+name: Aruba Housing Scraper - Detailed Listings
+description: Scrapes real HTML and extracts individual listings with all details (title, price, bedrooms, images, description)
+trigger: manual
+output: table
+outputColumns: [site_name, title, price, bedrooms, url, image_url, description, scraped_at]
+category: real-estate
+tags: [scraping, rental-properties, aruba, real-estate, detailed-listings]
+
+steps:
+  # Step 1: Load site configurations
+  - module: utilities.javascript.evaluateExpression
+    id: load-configs
+    name: Load Site Configs
+    inputs:
+      expression: |
+        ({
+          sites: [
+            {
+              name: "Aruba Listings",
+              url: "https://arubalistings.com/rent",
+              domain: "arubalistings.com",
+              selectors: {
+                listing: ".listing-item, .property-card, article, .listing",
+                title: "h2, h3, .listing-title, .property-title",
+                price: ".price, .rental-price, [class*='price']",
+                bedrooms: ".beds, .bedrooms, [class*='bed']",
+                description: ".description, .property-description, p",
+                image: "img",
+                link: "a"
+              }
+            },
+            {
+              name: "Aruba Long Term",
+              url: "https://www.arubalongterm.com/",
+              domain: "arubalongterm.com",
+              selectors: {
+                listing: ".property, .listing, article",
+                title: "h2, h3, .title",
+                price: ".price, .cost",
+                bedrooms: ".bedrooms, .beds",
+                description: ".description, p",
+                image: "img",
+                link: "a"
+              }
+            },
+            {
+              name: "Rentals in Aruba",
+              url: "https://www.rentalsinaruba.com/aruba-long-term-rentals/",
+              domain: "rentalsinaruba.com",
+              selectors: {
+                listing: ".property-item, .listing-card, article",
+                title: ".property-title, h2, h3",
+                price: ".price, .rental-price",
+                bedrooms: ".bedrooms, .features",
+                description: ".description",
+                image: "img",
+                link: "a"
+              }
+            }
+          ]
+        })
+    outputAs: config
+
+  # Step 2: Fetch HTML from first site
+  - module: utilities.scraper.fetchHtml
+    id: scrape-site-1
+    name: Fetch and Parse HTML - Site 1
+    inputs:
+      url: "{{config.sites[0].url}}"
+    outputAs: html1
+
+  # Step 3: Extract individual listings from HTML
+  - module: utilities.javascript.execute
+    id: extract-listings-1
+    name: Extract Detailed Listings - Site 1
+    inputs:
+      code: |
+        const site = config.sites[0];
+        const $ = $cheerio;
+        const listings = [];
+
+        // Helper functions
+        const extractPrice = (text) => {
+          if (!text) return null;
+          const cleaned = text.replace(/[^0-9]/g, '');
+          return cleaned ? parseInt(cleaned) : null;
+        };
+
+        const extractBedrooms = (text) => {
+          if (!text) return null;
+          const match = text.match(/(\d+)\s*(?:bed|br|bedroom)/i);
+          return match ? parseInt(match[1]) : null;
+        };
+
+        const extractUrl = (element, baseUrl) => {
+          const href = element.attr('href');
+          if (!href) return null;
+          if (href.startsWith('http')) return href;
+          try {
+            return new URL(href, baseUrl).href;
+          } catch {
+            return href;
+          }
+        };
+
+        const extractImageUrl = (element, baseUrl) => {
+          const src = element.attr('src') || element.attr('data-src');
+          if (!src) return null;
+          if (src.startsWith('http')) return src;
+          try {
+            return new URL(src, baseUrl).href;
+          } catch {
+            return src;
+          }
+        };
+
+        // Find all listing elements
+        const listingElements = $(site.selectors.listing);
+
+        listingElements.each((index, element) => {
+          const $el = $(element);
+
+          // Extract title
+          const titleEl = $el.find(site.selectors.title).first();
+          const title = titleEl.text().trim();
+
+          if (!title) return; // Skip if no title
+
+          // Extract price
+          const priceEl = $el.find(site.selectors.price).first();
+          const priceText = priceEl.text().trim();
+          const price = extractPrice(priceText);
+
+          // Extract bedrooms
+          const bedroomsEl = $el.find(site.selectors.bedrooms).first();
+          const bedroomsText = bedroomsEl.text().trim();
+          const bedrooms = extractBedrooms(bedroomsText);
+
+          // Extract description
+          const descEl = $el.find(site.selectors.description).first();
+          const description = descEl.text().trim().substring(0, 200);
+
+          // Extract image
+          const imageEl = $el.find(site.selectors.image).first();
+          const imageUrl = extractImageUrl(imageEl, site.url);
+
+          // Extract listing URL
+          const linkEl = $el.find(site.selectors.link).first();
+          const listingUrl = extractUrl(linkEl, site.url);
+
+          listings.push({
+            site_name: site.name,
+            title: title,
+            price: price,
+            bedrooms: bedrooms,
+            url: listingUrl || site.url,
+            image_url: imageUrl,
+            description: description,
+            scraped_at: new Date().toISOString()
+          });
+        });
+
+        return listings;
+      context:
+        $cheerio: "{{html1}}"
+        config: "{{config}}"
+    outputAs: listings1
+
+  # Step 4: Fetch HTML from second site
+  - module: utilities.scraper.fetchHtml
+    id: scrape-site-2
+    name: Fetch and Parse HTML - Site 2
+    inputs:
+      url: "{{config.sites[1].url}}"
+    outputAs: html2
+
+  # Step 5: Extract listings from second site
+  - module: utilities.javascript.execute
+    id: extract-listings-2
+    name: Extract Detailed Listings - Site 2
+    inputs:
+      code: |
+        const site = config.sites[1];
+        const $ = cheerio;
+        const listings = [];
+
+        const extractPrice = (text) => {
+          if (!text) return null;
+          const cleaned = text.replace(/[^0-9]/g, '');
+          return cleaned ? parseInt(cleaned) : null;
+        };
+
+        const extractBedrooms = (text) => {
+          if (!text) return null;
+          const match = text.match(/(\d+)\s*(?:bed|br|bedroom)/i);
+          return match ? parseInt(match[1]) : null;
+        };
+
+        const extractUrl = (element, baseUrl) => {
+          const href = element.attr('href');
+          if (!href) return null;
+          if (href.startsWith('http')) return href;
+          try {
+            return new URL(href, baseUrl).href;
+          } catch {
+            return href;
+          }
+        };
+
+        const extractImageUrl = (element, baseUrl) => {
+          const src = element.attr('src') || element.attr('data-src');
+          if (!src) return null;
+          if (src.startsWith('http')) return src;
+          try {
+            return new URL(src, baseUrl).href;
+          } catch {
+            return src;
+          }
+        };
+
+        const listingElements = $(site.selectors.listing);
+
+        listingElements.each((index, element) => {
+          const $el = $(element);
+
+          const titleEl = $el.find(site.selectors.title).first();
+          const title = titleEl.text().trim();
+
+          if (!title) return;
+
+          const priceEl = $el.find(site.selectors.price).first();
+          const priceText = priceEl.text().trim();
+          const price = extractPrice(priceText);
+
+          const bedroomsEl = $el.find(site.selectors.bedrooms).first();
+          const bedroomsText = bedroomsEl.text().trim();
+          const bedrooms = extractBedrooms(bedroomsText);
+
+          const descEl = $el.find(site.selectors.description).first();
+          const description = descEl.text().trim().substring(0, 200);
+
+          const imageEl = $el.find(site.selectors.image).first();
+          const imageUrl = extractImageUrl(imageEl, site.url);
+
+          const linkEl = $el.find(site.selectors.link).first();
+          const listingUrl = extractUrl(linkEl, site.url);
+
+          listings.push({
+            site_name: site.name,
+            title: title,
+            price: price,
+            bedrooms: bedrooms,
+            url: listingUrl || site.url,
+            image_url: imageUrl,
+            description: description,
+            scraped_at: new Date().toISOString()
+          });
+        });
+
+        return listings;
+      context:
+        $cheerio: "{{html2}}"
+        config: "{{config}}"
+    outputAs: listings2
+
+  # Step 6: Fetch HTML from third site
+  - module: utilities.scraper.fetchHtml
+    id: scrape-site-3
+    name: Fetch and Parse HTML - Site 3
+    inputs:
+      url: "{{config.sites[2].url}}"
+    outputAs: html3
+
+  # Step 7: Extract listings from third site
+  - module: utilities.javascript.execute
+    id: extract-listings-3
+    name: Extract Detailed Listings - Site 3
+    inputs:
+      code: |
+        const site = config.sites[2];
+        const $ = cheerio;
+        const listings = [];
+
+        const extractPrice = (text) => {
+          if (!text) return null;
+          const cleaned = text.replace(/[^0-9]/g, '');
+          return cleaned ? parseInt(cleaned) : null;
+        };
+
+        const extractBedrooms = (text) => {
+          if (!text) return null;
+          const match = text.match(/(\d+)\s*(?:bed|br|bedroom)/i);
+          return match ? parseInt(match[1]) : null;
+        };
+
+        const extractUrl = (element, baseUrl) => {
+          const href = element.attr('href');
+          if (!href) return null;
+          if (href.startsWith('http')) return href;
+          try {
+            return new URL(href, baseUrl).href;
+          } catch {
+            return href;
+          }
+        };
+
+        const extractImageUrl = (element, baseUrl) => {
+          const src = element.attr('src') || element.attr('data-src');
+          if (!src) return null;
+          if (src.startsWith('http')) return src;
+          try {
+            return new URL(src, baseUrl).href;
+          } catch {
+            return src;
+          }
+        };
+
+        const listingElements = $(site.selectors.listing);
+
+        listingElements.each((index, element) => {
+          const $el = $(element);
+
+          const titleEl = $el.find(site.selectors.title).first();
+          const title = titleEl.text().trim();
+
+          if (!title) return;
+
+          const priceEl = $el.find(site.selectors.price).first();
+          const priceText = priceEl.text().trim();
+          const price = extractPrice(priceText);
+
+          const bedroomsEl = $el.find(site.selectors.bedrooms).first();
+          const bedroomsText = bedroomsEl.text().trim();
+          const bedrooms = extractBedrooms(bedroomsText);
+
+          const descEl = $el.find(site.selectors.description).first();
+          const description = descEl.text().trim().substring(0, 200);
+
+          const imageEl = $el.find(site.selectors.image).first();
+          const imageUrl = extractImageUrl(imageEl, site.url);
+
+          const linkEl = $el.find(site.selectors.link).first();
+          const listingUrl = extractUrl(linkEl, site.url);
+
+          listings.push({
+            site_name: site.name,
+            title: title,
+            price: price,
+            bedrooms: bedrooms,
+            url: listingUrl || site.url,
+            image_url: imageUrl,
+            description: description,
+            scraped_at: new Date().toISOString()
+          });
+        });
+
+        return listings;
+      context:
+        $cheerio: "{{html3}}"
+        config: "{{config}}"
+    outputAs: listings3
+
+  # Step 8: Combine all listings
+  - module: utilities.javascript.execute
+    id: combine-listings
+    name: Combine All Listings
+    inputs:
+      code: |
+        const allListings = [
+          ...listings1,
+          ...listings2,
+          ...listings3
+        ];
+
+        return allListings;
+      context:
+        listings1: "{{listings1}}"
+        listings2: "{{listings2}}"
+        listings3: "{{listings3}}"
+    outputAs: allListings
+
+returnValue: "{{allListings}}"

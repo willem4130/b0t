@@ -1,0 +1,40 @@
+name: Test Math and String Utilities
+description: Simple test workflow using the new plan builder
+trigger: manual
+output: json
+steps:
+  - module: utilities.javascript.evaluateExpression
+    id: setup-data
+    name: Setup Test Data
+    inputs:
+      expression: "({numbers: [1, 2, 3, 4, 5, 10, 20, 30], text: 'Hello World'})"
+    outputAs: testData
+
+  - module: utilities.array-utils.max
+    id: calc-max
+    name: Calculate Maximum
+    inputs:
+      arr: "{{testData.numbers}}"
+    outputAs: maxValue
+
+  - module: utilities.array-utils.sum
+    id: calc-sum
+    name: Calculate Sum
+    inputs:
+      arr: "{{testData.numbers}}"
+    outputAs: totalSum
+
+  - module: utilities.string-utils.toSlug
+    id: make-slug
+    name: Convert to Slug
+    inputs:
+      text: "{{testData.text}}"
+    outputAs: slug
+
+  - module: utilities.math.add
+    id: final-calc
+    name: Add Max and Sum
+    inputs:
+      a: "{{maxValue}}"
+      b: "{{totalSum}}"
+    outputAs: finalResult
