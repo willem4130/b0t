@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { ClientMembersDialog } from '@/components/clients/client-members-dialog';
+
+// Lazy load heavy components
+const ClientMembersDialog = lazy(() => import('@/components/clients/client-members-dialog').then(mod => ({ default: mod.ClientMembersDialog })));
 import {
   Command,
   CommandGroup,
@@ -332,7 +334,7 @@ export default function ClientsPage() {
 
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95 group">
+                <Button variant="default" className="group">
                   <Plus className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:rotate-90" />
                   Add Client
                 </Button>
@@ -383,7 +385,7 @@ export default function ClientsPage() {
           <div className="flex justify-end">
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95 group">
+                <Button variant="default" className="group">
                   <Plus className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:rotate-90" />
                   Add Client
                 </Button>
@@ -651,12 +653,14 @@ export default function ClientsPage() {
 
         {/* Members Dialog */}
         {selectedClient && (
-          <ClientMembersDialog
-            clientId={selectedClient.id}
-            clientName={selectedClient.name}
-            open={membersDialogOpen}
-            onOpenChange={setMembersDialogOpen}
-          />
+          <Suspense fallback={null}>
+            <ClientMembersDialog
+              clientId={selectedClient.id}
+              clientName={selectedClient.name}
+              open={membersDialogOpen}
+              onOpenChange={setMembersDialogOpen}
+            />
+          </Suspense>
         )}
       </div>
     </DashboardLayout>

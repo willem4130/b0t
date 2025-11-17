@@ -329,23 +329,14 @@ function resolveValue(value: unknown, variables: Record<string, unknown>): unkno
       const path = match[1];
       const resolved = getNestedValue(variables, path);
 
-      // Debug logging for credential resolution
-      if (path.startsWith('credential.')) {
-        console.log('=== CREDENTIAL RESOLUTION DEBUG ===');
+      // Debug logging for variable resolution
+      if (path.startsWith('aiReply') || path.includes('aiReply')) {
+        console.log('=== AI REPLY RESOLUTION DEBUG ===');
         console.log('Path:', path);
-        console.log('Resolved value:', resolved ? `***VALUE_LENGTH_${String(resolved).length}***` : 'UNDEFINED');
-        console.log('Resolved is string?', typeof resolved === 'string');
-        console.log('variables.credential type:', typeof variables.credential);
-        console.log('variables.credential is object?', variables.credential && typeof variables.credential === 'object');
-        console.log('Available credential keys:', Object.keys(variables.credential || {}));
-        console.log('Specific key exists?', path.split('.')[1] in (variables.credential as Record<string, unknown> || {}));
+        console.log('Resolved value:', resolved);
+        console.log('Resolved type:', typeof resolved);
+        console.log('variables.aiReply:', variables.aiReply);
         console.log('===================================');
-
-        logger.info({
-          path,
-          resolved: resolved ? '***PRESENT***' : undefined,
-          availableCredentials: Object.keys(variables.credential || {}),
-        }, 'DEBUG: Resolving credential variable');
       }
 
       return resolved;
@@ -902,6 +893,7 @@ async function loadUserCredentialsFromDB(userId: string): Promise<Record<string,
       'rapidapi': ['rapidapi_api_key', 'rapidapi'],
       'openai': ['openai_api_key', 'openai'],
       'anthropic': ['anthropic_api_key', 'anthropic'],
+      'openrouter': ['openrouter_api_key', 'openrouter'],
     };
 
     // Apply aliases: check if any credential ID in the list exists, then make it available under all alias names

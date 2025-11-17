@@ -251,6 +251,7 @@
     background-color: var(--muted);
   }
 
+
   /* Fix prose text colors for dark theme */
   .prose-invert {
     --tw-prose-body: var(--gray-1000);
@@ -360,6 +361,11 @@
 /* Smooth scrolling for the entire page */
 html {
   scroll-behavior: smooth;
+}
+
+/* Ensure all buttons have pointer cursor */
+button[data-slot="button"] {
+  cursor: pointer;
 }
 
 /* Professional animations */

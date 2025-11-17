@@ -311,16 +311,22 @@ export function WorkflowSettingsDialog({
               min={field.min}
               max={field.max}
               step={field.step}
-              value={(value as number) ?? ''}
-              onChange={(e) =>
-                updateStepSetting(
-                  stepKey,
-                  field.key,
-                  field.step && field.step < 1
-                    ? parseFloat(e.target.value)
-                    : parseInt(e.target.value)
-                )
-              }
+              value={value === null || value === undefined ? '' : (value as number)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '') {
+                  // Allow clearing the field
+                  updateStepSetting(stepKey, field.key, null);
+                } else {
+                  updateStepSetting(
+                    stepKey,
+                    field.key,
+                    field.step && field.step < 1
+                      ? parseFloat(val)
+                      : parseInt(val)
+                  );
+                }
+              }}
               placeholder={field.placeholder}
               className="text-sm bg-background text-foreground"
             />
@@ -697,35 +703,31 @@ function getConfigurableFields(
       description: 'AI model to use',
     });
 
-    // Temperature (if present in inputs)
-    if (aiInputs.temperature !== undefined) {
-      fields.push({
-        key: 'temperature',
-        label: 'Temperature',
-        type: 'number',
-        value: aiInputs.temperature ?? 0.7,
-        min: 0,
-        max: 2,
-        step: 0.1,
-        placeholder: '0.7',
-        description: 'Controls randomness (0 = focused, 2 = creative)',
-      });
-    }
+    // Temperature (always show for AI modules)
+    fields.push({
+      key: 'temperature',
+      label: 'Temperature',
+      type: 'number',
+      value: aiInputs.temperature ?? 0.7,
+      min: 0,
+      max: 2,
+      step: 0.1,
+      placeholder: '0.7 (leave empty to use model default)',
+      description: 'Controls randomness (0 = focused, 2 = creative). Leave empty for models that don\'t support it.',
+    });
 
-    // Max tokens (if present in inputs)
-    if (inputs.maxTokens !== undefined) {
-      fields.push({
-        key: 'maxTokens',
-        label: 'Max Output Tokens',
-        type: 'number',
-        value: inputs.maxTokens ?? 4096,
-        min: 1,
-        max: 8000,
-        step: 1,
-        placeholder: '4096',
-        description: 'Maximum length of AI response',
-      });
-    }
+    // Max tokens (always show for AI modules)
+    fields.push({
+      key: 'maxTokens',
+      label: 'Max Output Tokens',
+      type: 'number',
+      value: aiInputs.maxTokens ?? 500,
+      min: 1,
+      max: 16000,
+      step: 1,
+      placeholder: '500 (leave empty to use model default)',
+      description: 'Maximum length of AI response. Leave empty for models that don\'t support it.',
+    });
 
     // Prompt field (for modules that use 'prompt' instead of separate system/user)
     if (aiInputs.prompt !== undefined && typeof aiInputs.prompt === 'string' && !aiInputs.prompt.includes('{{')) {
@@ -827,9 +829,20 @@ function applyStepSettings(
       Object.entries(settings).forEach(([key, value]) => {
         // Allow empty strings for systemPrompt and prompt to enable clearing them
         const allowEmpty = key === 'systemPrompt' || key === 'prompt';
+
+        // For numeric fields, allow empty to remove the parameter
+        const isNumericField = key === 'temperature' || key === 'maxTokens';
+        const shouldRemove = isNumericField && (value === '' || value === null || value === undefined);
         const shouldApply = value !== undefined && value !== null && (allowEmpty || value !== '');
 
-        if (shouldApply) {
+        if (shouldRemove) {
+          // Remove the parameter for models that don't support it
+          if (hasOptionsNesting) {
+            delete (step.inputs.options as Record<string, unknown>)[key];
+          } else {
+            delete step.inputs[key];
+          }
+        } else if (shouldApply) {
           // Special handling for systemPrompt - map to 'system' if that's what's being used
           const actualKey = key === 'systemPrompt' && hasOptionsNesting ?
             (step.inputs.options as Record<string, unknown>).system !== undefined ? 'system' : 'systemPrompt'

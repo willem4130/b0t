@@ -276,6 +276,18 @@ async function executeActionStep(
 
   if (step.outputAs) {
     context.variables[step.outputAs] = output;
+
+    // Debug logging for AI steps
+    if (step.module.includes('ai-sdk') && step.outputAs === 'aiReply') {
+      console.log('=== AI OUTPUT STORAGE DEBUG ===');
+      console.log('Step ID:', step.id);
+      console.log('OutputAs:', step.outputAs);
+      console.log('Output:', JSON.stringify(output, null, 2));
+      console.log('Output type:', typeof output);
+      console.log('Output.content:', output && typeof output === 'object' ? (output as Record<string, unknown>).content : 'N/A');
+      console.log('Output.finishReason:', output && typeof output === 'object' ? (output as Record<string, unknown>).finishReason : 'N/A');
+      console.log('===================================');
+    }
   }
 
   return output;

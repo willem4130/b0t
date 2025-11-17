@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Upload, Search, Workflow, CheckCircle2, XCircle, ChevronsUpDown, Check } from 'lucide-react';
 import { WorkflowsList } from '@/components/workflows/workflows-list';
 import { Input } from '@/components/ui/input';
+import useSWR from 'swr';
 import {
   Command,
   CommandGroup,
@@ -30,9 +31,15 @@ import { WorkflowListItem } from '@/types/workflows';
 import { toast } from 'sonner';
 import { useClient } from '@/components/providers/ClientProvider';
 
+// Fetcher function for workflows
+const workflowsFetcher = async (url: string) => {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Failed to fetch');
+  const data = await response.json();
+  return data.workflows || [];
+};
+
 export default function WorkflowsPage() {
-  const [workflows, setWorkflows] = useState<WorkflowListItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [triggerFilter, setTriggerFilter] = useState('all');
@@ -44,43 +51,26 @@ export default function WorkflowsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { currentClient } = useClient();
 
-  const fetchWorkflows = async () => {
-    try {
-      // Include organizationId in request if client is selected
-      const url = currentClient?.id
-        ? `/api/workflows?organizationId=${currentClient.id}`
-        : '/api/workflows';
-      const response = await fetch(url, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      });
-      const data = await response.json();
-      setWorkflows(data.workflows || []);
-    } catch (error) {
-      console.error('Failed to fetch workflows:', error);
-    } finally {
-      setLoading(false);
+  // Build the API URL based on current client
+  const workflowsUrl = currentClient?.id
+    ? `/api/workflows?organizationId=${currentClient.id}`
+    : '/api/workflows';
+
+  // Use SWR for caching workflows data
+  const { data: workflows = [], isLoading: loading, mutate } = useSWR<WorkflowListItem[]>(
+    workflowsUrl,
+    workflowsFetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      refreshInterval: 60000, // Auto-refresh every 60 seconds
+      dedupingInterval: 10000, // Cache for 10 seconds
     }
+  );
+
+  const fetchWorkflows = async () => {
+    await mutate();
   };
-
-  useEffect(() => {
-    fetchWorkflows();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentClient]);
-
-  // Poll for new workflows every 60 seconds when page is visible
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchWorkflows();
-      }
-    }, 60000);
-
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentClient]);
 
   const handleWorkflowDeleted = () => {
     fetchWorkflows();
@@ -470,7 +460,8 @@ export default function WorkflowsPage() {
 
           <Button
             onClick={handleImportClick}
-            className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95 group"
+            variant="default"
+            className="group"
           >
             <Upload className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:-translate-y-0.5" />
             Import
