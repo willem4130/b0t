@@ -48,6 +48,8 @@ npm run lint
 
 Fix ALL errors/warnings before continuing.
 
+**Quick fix:** Run `/fix` to automatically detect and fix all type and lint errors in parallel.
+
 If changes affect server/worker (not hot-reloadable):
 1. Restart: `npm run dev:full` (starts Next.js + worker)
 2. Read server logs for errors

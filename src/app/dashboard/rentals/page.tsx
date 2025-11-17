@@ -65,7 +65,7 @@ export default function RentalsPage() {
     try {
       const response = await fetch('/api/rentals?limit=1');
       const data = await response.json();
-      if (data.success && data.stats) {
+      if (data.stats) {
         setStats(data.stats);
       }
     } catch (error) {
