@@ -1,0 +1,1 @@
+ALTER TABLE "workflows" ADD COLUMN "last_run_output" jsonb;

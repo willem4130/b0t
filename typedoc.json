@@ -1,0 +1,30 @@
+{
+  "entryPoints": ["src/modules"],
+  "entryPointStrategy": "expand",
+  "out": "docs/modules",
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/node_modules/**"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "readme": "none",
+  "plugin": [],
+  "theme": "default",
+  "name": "b0t Module Documentation",
+  "includeVersion": true,
+  "sort": ["source-order"],
+  "kindSortOrder": ["Function", "Variable", "TypeAlias", "Interface"],
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "AI",
+    "Communication",
+    "Social",
+    "Business",
+    "Data",
+    "Utilities",
+    "*"
+  ]
+}

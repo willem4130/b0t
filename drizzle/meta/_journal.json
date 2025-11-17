@@ -1,0 +1,97 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1762235344319,
+      "tag": "0000_amazing_retro_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762241558278,
+      "tag": "0001_useful_pretty_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762333973652,
+      "tag": "0002_eminent_machine_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762384034957,
+      "tag": "0003_handy_glorian",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762425376000,
+      "tag": "0004_make_workflow_org_id_nullable",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1731356912000,
+      "tag": "0005_add_tweet_replies_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1731357000000,
+      "tag": "0006_add_foreign_key_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1731425000000,
+      "tag": "0007_add_composite_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1731426000000,
+      "tag": "0008_denormalize_organization_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1762971443366,
+      "tag": "0009_add_chat_conversations",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1763050181045,
+      "tag": "0010_odd_sir_ram",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1763302480399,
+      "tag": "0011_brave_thor",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1763309309825,
+      "tag": "0012_robust_pet_avengers",
+      "breakpoints": true
+    }
+  ]
+}

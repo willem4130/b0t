@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "name": "Test Agent Workflow (Broken)",
+  "description": "Test workflow with intentional agent parameter issues for auto-fix validation",
+  "trigger": {
+    "type": "chat"
+  },
+  "config": {
+    "steps": [
+      {
+        "id": "agent1",
+        "module": "ai.ai-agent.runAgent",
+        "inputs": {
+          "prompt": "Post a tweet about AI automation",
+          "model": "claude-3-5-sonnet-20241022",
+          "temperature": 0.8,
+          "maxSteps": 15,
+          "toolOptions": {
+            "categories": [
+              "social"
+            ],
+            "maxTools": 30
+          }
+        },
+        "outputAs": "result1"
+      },
+      {
+        "id": "agent2",
+        "module": "ai.ai-agent-stream.streamSocialAgent",
+        "inputs": {
+          "model": "gpt-4-turbo",
+          "temperature": 2,
+          "toolOptions": {
+            "modules": [
+              "twitter"
+            ]
+          }
+        },
+        "outputAs": "result2"
+      },
+      {
+        "id": "agent3",
+        "module": "ai.ai-agent.runDataAgent",
+        "inputs": {
+          "prompt": "Analyze data",
+          "temperature": 0,
+          "maxSteps": 10,
+          "toolOptions": {
+            "categories": [
+              "data",
+              "utilities"
+            ]
+          }
+        },
+        "outputAs": "result3"
+      }
+    ]
+  }
+}

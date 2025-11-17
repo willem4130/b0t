@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "name": "Test Agent Workflow (Valid)",
+  "description": "Properly formatted agent workflow for validation testing",
+  "trigger": {
+    "type": "chat"
+  },
+  "config": {
+    "steps": [
+      {
+        "id": "socialAgent",
+        "module": "ai.ai-agent.runSocialAgent",
+        "inputs": {
+          "prompt": "{{trigger.userMessage}}"
+        },
+        "outputAs": "socialResult"
+      },
+      {
+        "id": "streamingAgent",
+        "module": "ai.ai-agent-stream.runStreamingAgent",
+        "inputs": {
+          "prompt": "Summarize: {{socialResult.text}}",
+          "model": "claude-3-5-sonnet-20241022",
+          "temperature": 0.7,
+          "maxSteps": 5,
+          "toolOptions": {
+            "categories": ["utilities", "ai"],
+            "maxTools": 20
+          }
+        },
+        "outputAs": "summary"
+      }
+    ]
+  }
+}
