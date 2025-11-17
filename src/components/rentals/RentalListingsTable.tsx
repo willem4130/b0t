@@ -50,7 +50,6 @@ interface RentalListing {
 }
 
 interface RentalListingsResponse {
-  success: boolean;
   listings: RentalListing[];
   stats?: {
     totalListings: number;
@@ -103,7 +102,7 @@ export function RentalListingsTable({ onRowClick }: RentalListingsTableProps) {
     try {
       const response = await fetch('/api/rentals?limit=100');
       const result: RentalListingsResponse = await response.json();
-      if (result.success) {
+      if (result.listings) {
         setData(result.listings);
       }
     } catch (error) {
