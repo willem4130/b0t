@@ -29,14 +29,17 @@ Add a final step to your workflow that saves the scraped data using the `data.sa
      "id": "save-to-database",
      "type": "action",
      "name": "Save Listings to Database",
-     "module": "data.saveRentalListings",
+     "module": "data.rental-listings.saveRentalListings",
      "inputs": {
-       "listings": "{{scrape_output}}"
+       "listings": "{{scrape_output}}",
+       "userId": "{{user.id}}",
+       "organizationId": null
      }
    }
    ```
 
 2. **Replace `{{scrape_output}}`** with whatever variable contains your scraped listings array.
+3. The `userId` and `organizationId` are automatically provided by the workflow context.
 
 ### Data Format
 
@@ -107,7 +110,7 @@ npx tsx scripts/test-save-rentals.ts
 
 ## Available Modules
 
-- `data.saveRentalListings` - Save scraped listings to database
+- `data.rental-listings.saveRentalListings` - Save scraped listings to database
 
 ## Dashboard Features
 

@@ -2665,6 +2665,16 @@ export function getModuleRegistry(): ModuleCategory[] {
             },
           ],
         },
+        {
+          name: 'rental-listings',
+          functions: [
+            {
+              name: 'saveRentalListings',
+              description: "Save rental listings to database",
+              signature: 'saveRentalListings(listings, userId, organizationId?)',
+            },
+          ],
+        },
       ],
     },
     {
@@ -5069,6 +5079,26 @@ export function getModuleRegistry(): ModuleCategory[] {
           ],
         },
         {
+          name: 'browser',
+          functions: [
+            {
+              name: 'fetchRenderedHtml',
+              description: "Fetch HTML from a JavaScript-rendered website",
+              signature: 'fetchRenderedHtml(url, options?)',
+            },
+            {
+              name: 'takeScreenshot',
+              description: "Take a screenshot of a webpage",
+              signature: 'takeScreenshot(url, options?)',
+            },
+            {
+              name: 'closeBrowser',
+              description: "Close browser instance",
+              signature: 'closeBrowser()',
+            },
+          ],
+        },
+        {
           name: 'compression',
           functions: [
             {
@@ -6490,21 +6520,6 @@ export function getModuleRegistry(): ModuleCategory[] {
               name: 'extractStructuredData',
               description: "Extract structured data (JSON-LD)",
               signature: 'extractStructuredData($)',
-            },
-          ],
-        },
-        {
-          name: 'browser',
-          functions: [
-            {
-              name: 'fetchRenderedHtml',
-              description: "Fetch HTML from JavaScript-rendered website using headless browser",
-              signature: 'fetchRenderedHtml(url, options?)',
-            },
-            {
-              name: 'takeScreenshot',
-              description: "Take screenshot of webpage",
-              signature: 'takeScreenshot(url, options?)',
             },
           ],
         },
