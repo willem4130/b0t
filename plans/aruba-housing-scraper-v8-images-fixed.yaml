@@ -38,8 +38,6 @@ steps:
     name: Fetch Rendered HTML with Browser
     inputs:
       url: "{{config.sites[0].url}}"
-      waitForSelector: ".listing-container"
-      waitTime: 3000
     outputAs: html1
 
   # Step 3: Extract listings with enhanced image handling
