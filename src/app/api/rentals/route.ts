@@ -141,8 +141,21 @@ export async function GET(request: Request) {
       .limit(limit)
       .offset(offset);
 
-    // Apply post-query filters
-    let listings = rawListings;
+    // Apply post-query filters and normalize data
+    let listings = rawListings.map(listing => ({
+      ...listing,
+      // Ensure images and amenities are always arrays
+      images: Array.isArray(listing.images)
+        ? listing.images
+        : typeof listing.images === 'string' && listing.images
+          ? JSON.parse(listing.images)
+          : [],
+      amenities: Array.isArray(listing.amenities)
+        ? listing.amenities
+        : typeof listing.amenities === 'string' && listing.amenities
+          ? JSON.parse(listing.amenities)
+          : [],
+    }));
 
     // Filter by favorites only
     if (favoritesOnly) {

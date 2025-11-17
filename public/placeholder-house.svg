@@ -1,0 +1,33 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#E5E7EB"/>
+
+  <!-- House structure -->
+  <!-- Roof -->
+  <path d="M200 80 L320 160 L320 170 L80 170 L80 160 Z" fill="#9CA3AF"/>
+  <path d="M200 80 L80 160 L80 170 L200 120 L320 170 L320 160 Z" fill="#6B7280"/>
+
+  <!-- Main building -->
+  <rect x="100" y="170" width="200" height="110" fill="#D1D5DB"/>
+  <rect x="100" y="170" width="100" height="110" fill="#9CA3AF"/>
+
+  <!-- Door -->
+  <rect x="140" y="220" width="40" height="60" rx="2" fill="#4B5563"/>
+  <circle cx="170" cy="250" r="2" fill="#E5E7EB"/>
+
+  <!-- Windows -->
+  <rect x="210" y="190" width="35" height="30" rx="2" fill="#60A5FA"/>
+  <rect x="255" y="190" width="35" height="30" rx="2" fill="#60A5FA"/>
+  <rect x="210" y="235" width="35" height="30" rx="2" fill="#60A5FA"/>
+  <rect x="255" y="235" width="35" height="30" rx="2" fill="#60A5FA"/>
+
+  <!-- Window frames -->
+  <line x1="227.5" y1="190" x2="227.5" y2="220" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="210" y1="205" x2="245" y2="205" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="272.5" y1="190" x2="272.5" y2="220" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="255" y1="205" x2="290" y2="205" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="227.5" y1="235" x2="227.5" y2="265" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="210" y1="250" x2="245" y2="250" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="272.5" y1="235" x2="272.5" y2="265" stroke="#1E3A8A" stroke-width="1"/>
+  <line x1="255" y1="250" x2="290" y2="250" stroke="#1E3A8A" stroke-width="1"/>
+</svg>

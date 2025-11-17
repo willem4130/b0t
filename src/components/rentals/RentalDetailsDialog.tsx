@@ -62,9 +62,16 @@ export function RentalDetailsDialog({
 
   if (!listing) return null;
 
-  const images = listing.images && listing.images.length > 0
+  // Ensure images is always an array
+  const imagesData = Array.isArray(listing.images)
     ? listing.images
-    : ['/placeholder-house.jpg'];
+    : typeof listing.images === 'string' && listing.images
+      ? [listing.images]
+      : [];
+
+  const images = imagesData.length > 0
+    ? imagesData
+    : ['/placeholder-house.svg'];
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -113,7 +120,7 @@ export function RentalDetailsDialog({
               alt={`${listing.title} - Image ${currentImageIndex + 1}`}
               className="w-full h-full object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder-house.jpg';
+                (e.target as HTMLImageElement).src = '/placeholder-house.svg';
               }}
             />
 
@@ -179,7 +186,7 @@ export function RentalDetailsDialog({
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder-house.jpg';
+                      (e.target as HTMLImageElement).src = '/placeholder-house.svg';
                     }}
                   />
                 </button>

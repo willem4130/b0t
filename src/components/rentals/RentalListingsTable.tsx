@@ -89,7 +89,7 @@ interface RentalListingsTableProps {
 export function RentalListingsTable({ onRowClick }: RentalListingsTableProps) {
   const [data, setData] = useState<RentalListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'scrapedAt', desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'priceNumeric', desc: true }]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
@@ -140,7 +140,7 @@ export function RentalListingsTable({ onRowClick }: RentalListingsTableProps) {
       header: '',
       cell: ({ row }) => {
         const images = row.original.images || [];
-        const imageUrl = images[0] || '/placeholder-house.jpg';
+        const imageUrl = images[0] || '/placeholder-house.svg';
         return (
           <div className="w-16 h-16 rounded-md overflow-hidden bg-surface-secondary flex-shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -149,7 +149,7 @@ export function RentalListingsTable({ onRowClick }: RentalListingsTableProps) {
               alt={row.original.title}
               className="w-full h-full object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = '/placeholder-house.jpg';
+                (e.target as HTMLImageElement).src = '/placeholder-house.svg';
               }}
             />
           </div>
