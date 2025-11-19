@@ -24,6 +24,7 @@ import { CronTriggerConfig } from './trigger-configs/cron-trigger-config';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getModelIdsByProvider, getDefaultModel, fetchOpenRouterModels, type AIProvider } from '@/lib/ai-models';
+import { logger } from '@/lib/logger';
 
 interface WorkflowSettingsDialogProps {
   workflowId: string;
@@ -149,7 +150,7 @@ export function WorkflowSettingsDialog({
         onOpenChange(false);
       }
     } catch (error) {
-      console.error('Error saving workflow settings:', error);
+      logger.error({ error }, 'Error saving workflow settings');
       toast.error('Error saving workflow settings');
     } finally {
       setSaving(false);

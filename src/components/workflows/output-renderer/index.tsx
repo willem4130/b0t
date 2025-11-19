@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
+import { logger } from '@/lib/logger';
 
 const ReactJson = dynamic(() => import('@microlink/react-json-view'), { ssr: false });
 
@@ -37,7 +38,7 @@ export function OutputRenderer({ output, modulePath, displayHint, onClose }: Out
       }
     } catch (error) {
       // If parsing fails, keep original output
-      console.warn('Failed to parse output as JSON:', error);
+      logger.warn({ error }, 'Failed to parse output as JSON');
     }
   }
 

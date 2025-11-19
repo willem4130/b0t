@@ -14,6 +14,7 @@ import { showTwitter403Error, showTwitter429Error, showApiError, showTwitterSucc
 import { NEWS_TOPICS, NEWS_LANGUAGES, NEWS_COUNTRIES } from '@/modules/external-apis/rapidapi/newsapi/constants';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { logger } from '@/lib/logger';
 
 interface CompactAutomationRowProps {
   title: string;
@@ -100,7 +101,7 @@ export function CompactAutomationRow({
           if (settings.maxCharacters !== undefined) setMaxCharacters(settings.maxCharacters);
         }
       } catch (error) {
-        console.error('Failed to load automation settings:', error);
+        logger.error({ error }, 'Failed to load automation settings');
       } finally {
         setLoading(false);
       }
@@ -195,7 +196,7 @@ export function CompactAutomationRow({
         }),
       });
     } catch (error) {
-      console.error('Failed to save automation settings:', error);
+      logger.error({ error }, 'Failed to save automation settings');
     }
   };
 
@@ -215,16 +216,15 @@ export function CompactAutomationRow({
       const data = await response.json();
 
       if (!response.ok) {
-        console.error(`Failed to ${action} job:`, data.error);
+        logger.error({ error: data.error, action }, `Failed to ${action} job`);
         showApiError(data.error || `Failed to ${action} job`);
         return false;
       }
 
-      // Log success message
-      console.log(`✅ ${data.message}`);
+      logger.info({ message: data.message }, 'Job action completed');
       return true;
     } catch (error) {
-      console.error(`Error ${action}ing job:`, error);
+      logger.error({ error, action }, `Error ${action}ing job`);
       showApiError(`Failed to ${action} job`);
       return false;
     }

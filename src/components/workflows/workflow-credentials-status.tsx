@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { getIcon } from '@/lib/icon-map';
+import { logger } from '@/lib/logger';
 
 interface OAuthAccount {
   id: string;
@@ -79,7 +80,7 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
         }
       }
     } catch (error) {
-      console.error('Failed to fetch workflow credentials:', error);
+      logger.error({ error }, 'Failed to fetch workflow credentials');
     } finally {
       setLoading(false);
     }
@@ -168,7 +169,7 @@ export function WorkflowCredentialsStatus({ workflowId }: WorkflowCredentialsSta
         });
       }
     } catch (error) {
-      console.error('Failed to disconnect account:', error);
+      logger.error({ error }, 'Failed to disconnect account');
       toast.error('Connection error', {
         description: 'Failed to disconnect account. Please check your connection.',
       });

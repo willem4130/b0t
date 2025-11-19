@@ -168,7 +168,7 @@ export async function PATCH(
 
     return NextResponse.json({ error: 'No updates provided' }, { status: 400 });
   } catch (error) {
-    console.error('❌ PATCH /api/workflows/[id] error:', error);
+    logger.error({ error }, '❌ PATCH /api/workflows/[id] error');
     logger.error({ error, stack: error instanceof Error ? error.stack : undefined, message: error instanceof Error ? error.message : String(error) }, 'Failed to update workflow');
     return NextResponse.json(
       { error: 'Failed to update workflow', details: error instanceof Error ? error.message : String(error) },

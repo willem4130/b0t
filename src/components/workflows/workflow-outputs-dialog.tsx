@@ -9,15 +9,18 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle2, XCircle, Clock, ExternalLink } from 'lucide-react';
+import { Loader2, ExternalLink } from 'lucide-react';
 import { RunOutputModal } from './run-output-modal';
 import { useRouter } from 'next/navigation';
+import { StatusIcon } from '@/components/ui/status-icon';
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
   type ColumnDef,
 } from '@tanstack/react-table';
+import { logger } from '@/lib/logger';
+import { formatDuration, formatDate } from '@/lib/format-utils';
 
 interface WorkflowRun {
   id: string;
@@ -39,50 +42,6 @@ interface WorkflowOutputsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'success':
-      return (
-        <div className="p-1 rounded-md bg-gradient-to-br from-green-400 to-emerald-500">
-          <CheckCircle2 className="h-3 w-3 text-white" />
-        </div>
-      );
-    case 'error':
-      return (
-        <div className="p-1 rounded-md bg-gradient-to-br from-red-400 to-rose-500">
-          <XCircle className="h-3 w-3 text-white" />
-        </div>
-      );
-    case 'running':
-      return (
-        <div className="p-1 rounded-md bg-gradient-to-br from-blue-400 to-cyan-500">
-          <Clock className="h-3 w-3 text-white animate-spin" />
-        </div>
-      );
-    default:
-      return (
-        <div className="p-1 rounded-md bg-gradient-to-br from-gray-400 to-gray-500">
-          <Clock className="h-3 w-3 text-white" />
-        </div>
-      );
-  }
-};
-
-const formatDuration = (ms: number | null) => {
-  if (!ms) return '—';
-  return ms > 1000 ? `${(ms / 1000).toFixed(2)}s` : `${ms}ms`;
-};
-
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 export function WorkflowOutputsDialog({
   workflowId,
@@ -152,7 +111,7 @@ export function WorkflowOutputsDialog({
       // If we got less than 10, there's no more
       setHasMore(fetchedRuns.length === 10);
     } catch (error) {
-      console.error('Failed to fetch workflow runs:', error);
+      logger.error({ error }, 'Failed to fetch workflow runs');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -189,7 +148,7 @@ export function WorkflowOutputsDialog({
       header: () => <div className="w-10">Status</div>,
       cell: ({ row }) => (
         <div className="flex items-center justify-center">
-          {getStatusIcon(row.original.status)}
+          <StatusIcon status={row.original.status} size="sm" />
         </div>
       ),
     },
@@ -205,7 +164,7 @@ export function WorkflowOutputsDialog({
       header: () => <div className="text-right">Duration</div>,
       cell: ({ row }) => (
         <div className="text-right text-xs font-mono text-secondary tabular-nums">
-          {formatDuration(row.original.duration)}
+          {formatDuration(row.original.duration, '—')}
         </div>
       ),
     },

@@ -19,6 +19,7 @@ import { DiscordTriggerConfig } from './trigger-configs/discord-trigger-config';
 import { ChatInputTriggerConfig } from './trigger-configs/chat-input-trigger-config';
 import { GmailTriggerConfig } from './trigger-configs/gmail-trigger-config';
 import { OutlookTriggerConfig } from './trigger-configs/outlook-trigger-config';
+import { logger } from '@/lib/logger';
 
 interface TriggerConfigDialogProps {
   workflowId: string;
@@ -70,7 +71,7 @@ export function TriggerConfigDialog({
         onOpenChange(false);
       }
     } catch (error) {
-      console.error('Error saving trigger config:', error);
+      logger.error({ error }, 'Error saving trigger config');
       toast.error('Error saving trigger configuration');
     } finally {
       setSaving(false);

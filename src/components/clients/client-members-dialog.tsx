@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Users, Plus, Trash2, Mail, ChevronsUpDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface Member {
   id: string;
@@ -79,7 +80,7 @@ export function ClientMembersDialog({ clientId, clientName, open, onOpenChange }
         toast.error('Failed to load members');
       }
     } catch (error) {
-      console.error('Failed to fetch members:', error);
+      logger.error({ error }, 'Failed to fetch members');
       toast.error('An error occurred');
     } finally {
       setIsLoading(false);
@@ -117,7 +118,7 @@ export function ClientMembersDialog({ clientId, clientName, open, onOpenChange }
         toast.error(error.error || 'Failed to send invitation');
       }
     } catch (error) {
-      console.error('Failed to invite member:', error);
+      logger.error({ error }, 'Failed to invite member');
       toast.error('An error occurred');
     } finally {
       setIsInviting(false);
@@ -143,7 +144,7 @@ export function ClientMembersDialog({ clientId, clientName, open, onOpenChange }
               toast.error(error.error || 'Failed to remove member');
             }
           } catch (error) {
-            console.error('Failed to remove member:', error);
+            logger.error({ error }, 'Failed to remove member');
             toast.error('An error occurred');
           }
         },

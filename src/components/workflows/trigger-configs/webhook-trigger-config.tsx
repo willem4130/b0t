@@ -17,6 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { logger } from '@/lib/logger';
 
 interface WebhookTriggerConfigProps {
   workflowId: string;
@@ -52,7 +53,7 @@ export function WebhookTriggerConfig({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error);
+      logger.error({ error }, 'Failed to copy');
     }
   };
 

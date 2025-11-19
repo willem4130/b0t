@@ -2,10 +2,11 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { agentChatSessionsTable, agentChatMessagesTable } from '@/lib/schema';
 import { query } from '@anthropic-ai/claude-agent-sdk';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import { getAgentWorkspaceDir, initializeAgentWorkspace } from '@/lib/agent-workspace';
 import { expandSlashCommand } from '@/lib/slash-command-expander';
+import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,22 +50,14 @@ export async function POST(request: Request) {
       metadata: null,
     });
 
-    // Update message count
-    const sessionData = await db
-      .select()
-      .from(agentChatSessionsTable)
-      .where(eq(agentChatSessionsTable.id, sessionId))
-      .limit(1);
-
-    if (sessionData[0]) {
-      await db
-        .update(agentChatSessionsTable)
-        .set({
-          messageCount: (sessionData[0].messageCount || 0) + 1,
-          updatedAt: new Date(),
-        })
-        .where(eq(agentChatSessionsTable.id, sessionId));
-    }
+    // Update message count (optimized: SQL increment instead of SELECT + UPDATE)
+    await db
+      .update(agentChatSessionsTable)
+      .set({
+        messageCount: sql`COALESCE(${agentChatSessionsTable.messageCount}, 0) + 1`,
+        updatedAt: new Date(),
+      })
+      .where(eq(agentChatSessionsTable.id, sessionId));
 
     // Map model to API model ID
     const modelMap: Record<string, string> = {
@@ -73,6 +66,13 @@ export async function POST(request: Request) {
     };
 
     const apiModelId = modelMap[model] || modelMap.sonnet;
+
+    // Get session data for checking message count and SDK session ID
+    const sessionData = await db
+      .select()
+      .from(agentChatSessionsTable)
+      .where(eq(agentChatSessionsTable.id, sessionId))
+      .limit(1);
 
     // Create SSE stream
     const encoder = new TextEncoder();
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
 
           // Handle /clear command - clear context but keep visual history
           if (message.trim() === '/clear') {
-            console.log('🧹 /clear command - clearing SDK session');
+            logger.info('🧹 /clear command - clearing SDK session');
 
             // Clear SDK session ID to force fresh start
             if (sessionData[0]) {
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
             // Capture SDK session ID from system messages
             if (msg.type === 'system' && 'session_id' in msg && typeof msg.session_id === 'string') {
               capturedSdkSessionId = msg.session_id;
-              console.log(`📋 Captured SDK session ID: ${capturedSdkSessionId}`);
+              logger.info(`📋 Captured SDK session ID: ${capturedSdkSessionId}`);
             }
 
             // Stream all message types including partial messages
@@ -227,11 +227,11 @@ export async function POST(request: Request) {
             metadata: null,
           });
 
-          // Update message count again for assistant message
+          // Update message count again for assistant message (optimized: SQL increment)
           await db
             .update(agentChatSessionsTable)
             .set({
-              messageCount: (sessionData[0]?.messageCount || 0) + 2,
+              messageCount: sql`COALESCE(${agentChatSessionsTable.messageCount}, 0) + 1`,
               updatedAt: new Date(),
             })
             .where(eq(agentChatSessionsTable.id, sessionId));
@@ -243,7 +243,7 @@ export async function POST(request: Request) {
 
           controller.close();
         } catch (error) {
-          console.error('Agent chat error:', error);
+          logger.error({ error }, 'Agent chat error');
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`)
@@ -261,7 +261,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    console.error('Agent chat request error:', error);
+    logger.error({ error }, 'Agent chat request error');
     return new Response('Internal server error', { status: 500 });
   }
 }

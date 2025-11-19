@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { OutputRenderer } from './output-renderer';
+import { formatDuration } from '@/lib/format-utils';
 
 interface ExecutionResult {
   success: boolean;
@@ -33,12 +34,6 @@ export function ExecutionResultDialog({
   workflowName,
 }: ExecutionResultDialogProps) {
   if (!result) return null;
-
-  const formatDuration = (ms?: number) => {
-    if (!ms) return 'N/A';
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

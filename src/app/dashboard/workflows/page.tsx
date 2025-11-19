@@ -30,6 +30,7 @@ import { Label } from '@/components/ui/label';
 import { WorkflowListItem } from '@/types/workflows';
 import { toast } from 'sonner';
 import { useClient } from '@/components/providers/ClientProvider';
+import { logger } from '@/lib/logger';
 
 // Fetcher function for workflows
 const workflowsFetcher = async (url: string) => {
@@ -99,7 +100,7 @@ export default function WorkflowsPage() {
         description: 'Workflow has been downloaded successfully.',
       });
     } catch (error) {
-      console.error('Failed to export workflow:', error);
+      logger.error({ error }, 'Failed to export workflow');
       toast.error('Failed to export workflow', {
         description: error instanceof Error ? error.message : 'Unknown error occurred',
       });
@@ -153,7 +154,7 @@ export default function WorkflowsPage() {
       // Hard reload the page to show the new workflow
       window.location.reload();
     } catch (error) {
-      console.error('Failed to import workflow:', error);
+      logger.error({ error }, 'Failed to import workflow');
       setImportError(
         error instanceof Error ? error.message : 'Failed to import workflow'
       );

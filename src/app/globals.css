@@ -349,6 +349,39 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
   }
+
+  /* Command component styles */
+  .command-dialog [cmdk-group-heading] {
+    @apply text-muted-foreground px-2 font-medium;
+  }
+
+  .command-dialog [cmdk-group] {
+    @apply px-2;
+  }
+
+  .command-dialog [cmdk-group]:not([hidden]) ~ [cmdk-group] {
+    @apply pt-0;
+  }
+
+  .command-dialog [cmdk-input-wrapper] svg {
+    @apply h-5 w-5;
+  }
+
+  .command-dialog [cmdk-input] {
+    @apply h-12;
+  }
+
+  .command-dialog [cmdk-item] {
+    @apply px-2 py-3;
+  }
+
+  .command-dialog [cmdk-item] svg {
+    @apply h-5 w-5;
+  }
+
+  .command-dialog [data-slot="command-input-wrapper"] {
+    @apply h-12;
+  }
 }
 
 /* Ensure consistent font rendering across different DPI levels */

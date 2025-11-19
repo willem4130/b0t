@@ -19,6 +19,7 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { InputField } from './chat-input-trigger-config';
+import { logger } from '@/lib/logger';
 
 interface ChatInputExecuteProps {
   workflowId: string;
@@ -56,7 +57,7 @@ export function ChatInputExecute({ fields, onExecute, executing = false, onReady
     try {
       await onExecute(values);
     } catch (error) {
-      console.error('Execution error:', error);
+      logger.error({ error }, 'Execution error');
       const errorMessage = error instanceof Error ? error.message : 'Failed to execute workflow';
       toast.error(errorMessage);
     }

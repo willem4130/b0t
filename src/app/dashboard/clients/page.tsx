@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 // Lazy load heavy components
 const ClientMembersDialog = lazy(() => import('@/components/clients/client-members-dialog').then(mod => ({ default: mod.ClientMembersDialog })));
@@ -80,7 +81,7 @@ export default function ClientsPage() {
         toast.error(error.error || 'Failed to create client');
       }
     } catch (error) {
-      console.error('Failed to create client:', error);
+      logger.error({ error }, 'Failed to create client');
       toast.error('An error occurred');
     } finally {
       setIsCreating(false);
@@ -118,7 +119,7 @@ export default function ClientsPage() {
         toast.error(error.error || 'Failed to update client');
       }
     } catch (error) {
-      console.error('Failed to update client:', error);
+      logger.error({ error }, 'Failed to update client');
       toast.error('An error occurred');
     } finally {
       setIsSaving(false);
@@ -143,7 +144,7 @@ export default function ClientsPage() {
       toast.success(`Client ${checked ? 'activated' : 'deactivated'}`);
       await refetchClients();
     } catch (error) {
-      console.error('Error updating client status:', error);
+      logger.error({ error }, 'Error updating client status');
       toast.error('Failed to update client status');
     } finally {
       setTogglingStatus((prev) => ({ ...prev, [clientId]: false }));
@@ -169,7 +170,7 @@ export default function ClientsPage() {
               toast.error(error.error || 'Failed to delete client');
             }
           } catch (error) {
-            console.error('Failed to delete client:', error);
+            logger.error({ error }, 'Failed to delete client');
             toast.error('An error occurred');
           }
         },
