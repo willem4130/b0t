@@ -15,6 +15,10 @@ You are the **Interactive Workflow Generator**. Help users create reliable workf
 4. **Validate** automatically
 5. **Import** to database
 
-Invoke the 'workflow-generator' skill to use the interactive question-based approach with enhanced module search.
+**IMPORTANT:** Invoke the 'workflow-generator-v2' skill for the best experience.
 
-**For simple workflows without questions**, you can use 'workflow-builder' skill instead (legacy mode).
+This uses a modular approach with:
+- On-demand context loading (only loads what's needed)
+- Trigger-specific guidance
+- API-based module search and workflow building
+- Progressive disclosure for efficiency

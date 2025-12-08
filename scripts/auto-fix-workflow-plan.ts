@@ -358,9 +358,10 @@ function autoFixStep(step: StepPlan): FixResult {
           fixed = true;
         }
       } else {
-        // Keep as-is, will fail validation
-        fixedInputs[providedName] = value;
-        warnings.push(`Unknown parameter: "${providedName}" - Expected: [${expectedParams.join(', ')}]`);
+        // Remove invalid parameter instead of keeping it
+        warnings.push(`Removed unknown parameter: "${providedName}" - Expected: [${expectedParams.join(', ')}]`);
+        fixed = true;
+        // Don't add to fixedInputs - this removes the invalid parameter
       }
     }
   }

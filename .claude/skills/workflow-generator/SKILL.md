@@ -113,6 +113,8 @@ Based on user answers, create a YAML plan file:
 name: Workflow Name
 description: Optional workflow description
 trigger: manual | cron | webhook | telegram | discord | chat | chat-input
+webhookSync: true | false     # Optional, for webhook triggers - returns workflow output instead of {"queued": true}
+webhookSecret: "secret-key"   # Optional, for webhook triggers - enables HMAC signature verification
 output: json | table | list | text | markdown | image | images | chart
 outputColumns: [col1, col2]  # Optional, for table/list output
 category: category-name       # Optional
@@ -127,12 +129,39 @@ steps:
     outputAs: variableName (optional)
 ```
 
+### Trigger Variables (CRITICAL)
+
+**Each trigger type provides specific variables accessible in workflows:**
+
+**Webhook triggers** provide `trigger` object with:
+- `trigger.body` - JSON request body (e.g., `trigger.body.email`, `trigger.body.numbers`)
+- `trigger.headers` - HTTP headers object
+- `trigger.query` - Query parameters object
+- `trigger.method` - HTTP method (POST, GET, etc.)
+- `trigger.url` - Request URL path
+
+**Chat triggers** provide:
+- `trigger.message` or `trigger.userInput` - User's message text
+- `trigger.conversationId` - Conversation ID
+
+**Telegram/Discord triggers** provide:
+- `trigger.message` - Message text
+- `trigger.userId` - User ID
+- `trigger.chatId` - Chat/channel ID
+
+**Manual/Cron triggers** provide:
+- No trigger data (start with hardcoded values or config)
+
+**IMPORTANT**: Always use `trigger.body.fieldName` for webhook data, NOT `webhookData.fieldName` or `input.fieldName`!
+
 ### User Answer → Plan Mapping
 
 **Trigger Types (choose one):**
 - `manual` - On-demand execution (click Run button)
 - `cron` - Scheduled execution (set frequency in UI after import)
-- `webhook` - External HTTP trigger
+- `webhook` - External HTTP trigger (no auth required)
+  - Async mode (default): Returns `{"queued": true}` immediately
+  - Sync mode: Add `?sync=true` to URL or set `sync: true` in trigger config to return actual workflow output
 - `telegram` - Telegram bot message trigger
 - `discord` - Discord bot message trigger
 - `chat` - AI chat conversation trigger
@@ -239,6 +268,62 @@ steps:
       prompt: "Write a blog post about {{topic}}"
       model: gpt-4o-mini
       provider: openai
+```
+
+**Webhook with Synchronous Response:**
+```yaml
+name: Data Validation API
+description: Webhook that validates and processes data, returns results synchronously
+trigger: webhook
+webhookSync: true          # Enable sync mode - returns output instead of {"queued": true}
+webhookSecret: "my-secret" # Optional - enables HMAC signature verification
+output: json
+returnValue: "{{validationResult}}"
+steps:
+  # 1. Validate incoming data
+  # CRITICAL: Use trigger.body to access webhook POST data
+  - module: utilities.javascript.execute
+    id: validate-data
+    inputs:
+      code: |
+        const errors = [];
+        if (!trigger.body.email || !trigger.body.email.includes('@')) {
+          errors.push('Invalid email');
+        }
+        if (!trigger.body.age || trigger.body.age < 18) {
+          errors.push('Age must be 18+');
+        }
+        return {
+          valid: errors.length === 0,
+          errors: errors,
+          data: trigger.body
+        };
+    outputAs: validation
+
+  # 2. Process if valid, return error if not
+  - module: utilities.javascript.execute
+    id: process-result
+    inputs:
+      code: |
+        if (!validation.valid) {
+          return {
+            status: 'error',
+            errors: validation.errors
+          };
+        }
+        return {
+          status: 'success',
+          message: 'Data validated successfully',
+          processedAt: new Date().toISOString()
+        };
+      context:
+        validation: "{{validation}}"
+    outputAs: validationResult
+
+# Usage:
+# POST /api/workflows/{id}/webhook?sync=true
+# Body: {"email": "test@example.com", "age": 25}
+# Response: {"status": "success", "message": "...", "processedAt": "..."}
 ```
 
 **Complex Data Pipeline (Multi-step transformation):**

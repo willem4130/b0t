@@ -32,6 +32,8 @@ interface WorkflowPlan {
   name: string;
   description?: string;
   trigger: 'manual' | 'cron' | 'webhook' | 'telegram' | 'discord' | 'chat' | 'chat-input';
+  webhookSync?: boolean;  // Enable synchronous webhook execution (returns workflow output)
+  webhookSecret?: string;  // HMAC secret for webhook signature verification
   output: 'json' | 'table' | 'list' | 'text' | 'markdown' | 'image' | 'images' | 'chart';
   outputColumns?: string[];
   category?: string;
@@ -378,6 +380,14 @@ async function buildWorkflowFromPlan(planFile: string, autoFix: boolean = true):
   } else if (plan.trigger === 'chat' || plan.trigger === 'chat-input') {
     // Add required inputVariable for chat triggers
     triggerConfig.inputVariable = 'userInput';
+  } else if (plan.trigger === 'webhook') {
+    // Add webhook-specific configuration
+    if (plan.webhookSync !== undefined) {
+      triggerConfig.sync = plan.webhookSync;
+    }
+    if (plan.webhookSecret) {
+      triggerConfig.webhookSecret = plan.webhookSecret;
+    }
   }
 
   const workflow: WorkflowExport = {
@@ -461,9 +471,20 @@ async function buildWorkflowFromPlan(planFile: string, autoFix: boolean = true):
 
   console.log('\n✅ Workflow validation passed!\n');
 
-  // Optional: Dry-run test (can be disabled with --skip-dry-run)
-  const skipDryRun = process.argv.includes('--skip-dry-run');
-  if (!skipDryRun) {
+  // Check if workflow uses AI modules (auto-skip dry-run for AI workflows)
+  const hasAIModules = plan.steps.some(step =>
+    step.module.startsWith('ai.') ||
+    step.module.includes('.ai-') ||
+    step.module.includes('openai') ||
+    step.module.includes('anthropic')
+  );
+
+  // Optional: Dry-run test (can be disabled with --skip-dry-run or auto-skipped for AI workflows)
+  const skipDryRun = process.argv.includes('--skip-dry-run') || hasAIModules;
+
+  if (skipDryRun && hasAIModules) {
+    console.log('ℹ️  Skipping dry-run (workflow uses AI modules - requires real API calls)\n');
+  } else if (!skipDryRun) {
     console.log('🧪 Running dry-run test...\n');
     try {
       execSync(`npx tsx scripts/dry-run-workflow.ts "${workflowFile}"`, {
